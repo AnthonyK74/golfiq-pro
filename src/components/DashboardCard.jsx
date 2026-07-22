@@ -1,33 +1,37 @@
-export default function DashboardCard({ card, setPage }) {
+import { useNavigate } from "react-router-dom";
+
+export default function DashboardCard({ card }) {
+  const navigate = useNavigate();
   const Icon = card.icon;
 
   const handleClick = () => {
     switch (card.title) {
       case "World Rankings":
-        setPage("world-rankings");
+        navigate("/world-rankings");
         break;
 
       case "Player Search":
-        setPage("player-search");
+        navigate("/player-search");
         break;
 
       case "Live Tournaments":
-        setPage("schedule");
+        navigate("/schedule");
         break;
 
       case "Statistics":
-        setPage("statistics");
+        navigate("/statistics");
         break;
 
       case "Predictions":
-        setPage("predictions");
+        navigate("/predictions");
         break;
 
       case "GOAT Rankings":
-        setPage("goat-rankings");
+        navigate("/goat-rankings");
         break;
 
       default:
+        navigate("/");
         break;
     }
   };
@@ -41,7 +45,9 @@ export default function DashboardCard({ card, setPage }) {
 
       <h2 className="text-2xl font-bold">{card.title}</h2>
 
-      <p className="mt-2 text-slate-400">{card.desc}</p>
+      <p className="mt-2 text-slate-400">
+        {card.desc}
+      </p>
     </button>
   );
 }

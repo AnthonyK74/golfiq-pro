@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { getLeaderboard } from "../services/statsService";
 
 const stats = [
@@ -24,7 +25,9 @@ const stats = [
   },
 ];
 
-export default function Statistics({ setPage }) {
+export default function Statistics() {
+  const navigate = useNavigate();
+
   const [selectedStat, setSelectedStat] = useState(stats[0]);
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,19 +54,18 @@ export default function Statistics({ setPage }) {
 
   return (
     <div className="p-10">
-
       <button
-        onClick={() => setPage("dashboard")}
+        onClick={() => navigate("/")}
         className="mb-8 rounded-xl bg-green-500 px-5 py-3 font-bold text-slate-900 hover:bg-green-400"
       >
         ← Back to Dashboard
       </button>
 
-      <h1 className="text-4xl font-bold text-green-400 mb-8">
+      <h1 className="mb-8 text-4xl font-bold text-green-400">
         📊 GolfIQ Statistics
       </h1>
 
-      <div className="flex flex-wrap gap-3 mb-8">
+      <div className="mb-8 flex flex-wrap gap-3">
         {stats.map((stat) => (
           <button
             key={stat.field}
@@ -80,16 +82,13 @@ export default function Statistics({ setPage }) {
       </div>
 
       {loading ? (
-        <div className="text-slate-400 text-lg">
+        <div className="text-lg text-slate-400">
           Loading statistics...
         </div>
       ) : (
         <div className="overflow-hidden rounded-xl border border-slate-700">
-
           <table className="w-full">
-
             <thead className="bg-green-600 text-slate-900">
-
               <tr>
                 <th className="p-4">Rank</th>
                 <th className="p-4 text-left">Player</th>
@@ -97,20 +96,15 @@ export default function Statistics({ setPage }) {
                 <th className="p-4">Events</th>
                 <th className="p-4 text-right">Average</th>
               </tr>
-
             </thead>
 
             <tbody>
-
               {players.map((player, index) => (
-
                 <tr
                   key={player.id}
-                  className="border-b border-slate-800 hover:bg-slate-900"
+                  className="cursor-pointer border-b border-slate-800 transition hover:bg-slate-900"
                 >
-
                   <td className="p-4 text-center font-bold">
-
                     {index === 0
                       ? "🥇"
                       : index === 1
@@ -118,10 +112,9 @@ export default function Statistics({ setPage }) {
                       : index === 2
                       ? "🥉"
                       : index + 1}
-
                   </td>
 
-                  <td className="p-4 font-semibold">
+                  <td className="p-4 font-semibold text-green-400">
                     {player.name}
                   </td>
 
@@ -142,18 +135,12 @@ export default function Statistics({ setPage }) {
                   >
                     {player.average.toFixed(2)}
                   </td>
-
                 </tr>
-
               ))}
-
             </tbody>
-
           </table>
-
         </div>
       )}
-
     </div>
   );
 }

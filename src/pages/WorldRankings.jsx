@@ -1,10 +1,13 @@
+import { useNavigate } from "react-router-dom";
 import rankings from "../data/rankings";
 
-export default function WorldRankings({ setPage }) {
+export default function WorldRankings() {
+  const navigate = useNavigate();
+
   return (
     <div className="p-10">
       <button
-        onClick={() => setPage("dashboard")}
+        onClick={() => navigate("/")}
         className="mb-8 rounded-xl bg-green-500 px-5 py-3 font-bold text-slate-900 shadow-lg hover:bg-green-400"
       >
         ← Back to Dashboard
