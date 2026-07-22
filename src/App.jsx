@@ -1,3 +1,4 @@
+import Statistics from "./pages/Statistics";
 import { useState } from "react";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
@@ -116,23 +117,8 @@ export default function App() {
           )}
 
           {page === "statistics" && (
-            <div className="p-10">
-              <button
-                onClick={() => setPage("dashboard")}
-                className="mb-8 rounded-xl bg-green-500 px-5 py-3 font-bold text-slate-900 hover:bg-green-400"
-              >
-                ← Back to Dashboard
-              </button>
-
-              <h1 className="text-4xl font-bold text-green-400">
-                📊 Statistics
-              </h1>
-
-              <p className="mt-6 text-slate-400">
-                Coming soon...
-              </p>
-            </div>
-          )}
+  <Statistics setPage={setPage} />
+)}
 
           {page === "predictions" && (
             <div className="p-10">
