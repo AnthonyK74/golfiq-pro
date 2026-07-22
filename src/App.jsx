@@ -1,4 +1,4 @@
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
@@ -6,32 +6,13 @@ import Header from "./components/Header";
 import Dashboard from "./pages/Dashboard";
 import WorldRankings from "./pages/WorldRankings";
 import PlayerSearch from "./pages/PlayerSearch";
+import PlayerProfile from "./pages/PlayerProfile";
+import ComparePlayers from "./pages/ComparePlayers";
 import Schedule from "./pages/Schedule";
 import Statistics from "./pages/Statistics";
+import Predictions from "./pages/Predictions";
+import CourseFit from "./pages/CourseFit";
 import GoatRankings from "./pages/GoatRankings";
-
-function Predictions() {
-  const navigate = useNavigate();
-
-  return (
-    <div className="p-10">
-      <button
-        onClick={() => navigate("/")}
-        className="mb-8 rounded-xl bg-green-500 px-5 py-3 font-bold text-slate-900 hover:bg-green-400"
-      >
-        ← Back to Dashboard
-      </button>
-
-      <h1 className="text-4xl font-bold text-green-400">
-        🎯 GolfIQ Predictions
-      </h1>
-
-      <p className="mt-6 text-slate-400">
-        Coming soon...
-      </p>
-    </div>
-  );
-}
 
 export default function App() {
   return (
@@ -46,6 +27,11 @@ export default function App() {
             <Route path="/" element={<Dashboard />} />
 
             <Route
+              path="/statistics"
+              element={<Statistics />}
+            />
+
+            <Route
               path="/world-rankings"
               element={<WorldRankings />}
             />
@@ -56,23 +42,33 @@ export default function App() {
             />
 
             <Route
+              path="/player/:id"
+              element={<PlayerProfile />}
+            />
+
+            <Route
+              path="/compare"
+              element={<ComparePlayers />}
+            />
+
+            <Route
               path="/schedule"
               element={<Schedule />}
             />
 
             <Route
-              path="/statistics"
-              element={<Statistics />}
+              path="/predictions"
+              element={<Predictions />}
+            />
+
+            <Route
+              path="/course-fit"
+              element={<CourseFit />}
             />
 
             <Route
               path="/goat-rankings"
               element={<GoatRankings />}
-            />
-
-            <Route
-              path="/predictions"
-              element={<Predictions />}
             />
           </Routes>
         </main>

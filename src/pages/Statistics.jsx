@@ -1,146 +1,137 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getLeaderboard } from "../services/statsService";
+import { useGolfIQ } from "../context/GolfIQContext";
 
-const stats = [
-  {
-    label: "🏌️ Off The Tee",
-    field: "sg_off_tee",
-  },
-  {
-    label: "🎯 Approach",
-    field: "sg_approach",
-  },
-  {
-    label: "🌱 Around Green",
-    field: "sg_around_green",
-  },
-  {
-    label: "⛳ Putting",
-    field: "sg_putting",
-  },
-  {
-    label: "⭐ CGI",
-    field: "cgi",
-  },
+const OPTIONS = [
+  { label: "🏆 GolfIQ Rankings (CGI)", value: "cgi" },
+  { label: "🏌️ SG Off The Tee", value: "sg_off_tee" },
+  { label: "🎯 SG Approach", value: "sg_approach" },
+  { label: "🌱 SG Around Green", value: "sg_around_green" },
+  { label: "⛳ SG Putting", value: "sg_putting" },
+  { label: "⭐ SG Total", value: "sg_total" },
 ];
 
 export default function Statistics() {
   const navigate = useNavigate();
 
-  const [selectedStat, setSelectedStat] = useState(stats[0]);
-  const [players, setPlayers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { players, loading } = useGolfIQ();
 
-  useEffect(() => {
-    async function loadLeaderboard() {
-      try {
-        setLoading(true);
+  const [stat, setStat] = useState("cgi");
 
-        const leaderboard = await getLeaderboard(
-          selectedStat.field
-        );
+  const leaderboard = useMemo(() => {
+    const sorted = [...players];
 
-        setPlayers(leaderboard);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
+    sorted.sort((a, b) => {
+      if (stat === "cgi") {
+        return b.averages.cgi - a.averages.cgi;
       }
-    }
 
-    loadLeaderboard();
-  }, [selectedStat]);
+      return (
+        (b.averages?.[stat] ?? 0) -
+        (a.averages?.[stat] ?? 0)
+      );
+    });
+
+    return sorted;
+  }, [players, stat]);
+
+  if (loading) {
+    return (
+      <div className="p-10 text-xl text-slate-400">
+        Loading Statistics...
+      </div>
+    );
+  }
 
   return (
-    <div className="p-10">
+    <div className="space-y-8">
+
       <button
         onClick={() => navigate("/")}
-        className="mb-8 rounded-xl bg-green-500 px-5 py-3 font-bold text-slate-900 hover:bg-green-400"
+        className="rounded-xl bg-green-500 px-5 py-3 font-bold text-slate-900 hover:bg-green-400"
       >
         ← Back to Dashboard
       </button>
 
-      <h1 className="mb-8 text-4xl font-bold text-green-400">
-        📊 GolfIQ Statistics
-      </h1>
+      <div className="flex items-center justify-between">
 
-      <div className="mb-8 flex flex-wrap gap-3">
-        {stats.map((stat) => (
-          <button
-            key={stat.field}
-            onClick={() => setSelectedStat(stat)}
-            className={`rounded-lg px-5 py-2 font-bold transition ${
-              selectedStat.field === stat.field
-                ? "bg-green-500 text-slate-900"
-                : "bg-slate-800 text-white hover:bg-slate-700"
-            }`}
-          >
-            {stat.label}
-          </button>
-        ))}
+        <h1 className="text-5xl font-bold text-green-400">
+          GolfIQ Rankings
+        </h1>
+
+        <select
+          value={stat}
+          onChange={(e) => setStat(e.target.value)}
+          className="rounded-lg border border-slate-700 bg-slate-900 p-3 text-white"
+        >
+          {OPTIONS.map((option) => (
+            <option
+              key={option.value}
+              value={option.value}
+            >
+              {option.label}
+            </option>
+          ))}
+        </select>
+
       </div>
 
-      {loading ? (
-        <div className="text-lg text-slate-400">
-          Loading statistics...
-        </div>
-      ) : (
-        <div className="overflow-hidden rounded-xl border border-slate-700">
-          <table className="w-full">
-            <thead className="bg-green-600 text-slate-900">
-              <tr>
-                <th className="p-4">Rank</th>
-                <th className="p-4 text-left">Player</th>
-                <th className="p-4">Country</th>
-                <th className="p-4">Events</th>
-                <th className="p-4 text-right">Average</th>
+      <table className="w-full">
+
+        <thead>
+
+          <tr className="border-b border-slate-700 text-left">
+
+            <th className="pb-3">Rank</th>
+            <th>Player</th>
+            <th>Country</th>
+            <th>Value</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          {leaderboard.map((player, index) => {
+
+            const value =
+              stat === "cgi"
+                ? player.averages.cgi
+                : player.averages[stat];
+
+            return (
+
+              <tr
+                key={player.player.id}
+                onClick={() =>
+                  navigate(`/player/${player.player.id}`)
+                }
+                className="cursor-pointer border-b border-slate-800 hover:bg-slate-900"
+              >
+
+                <td className="py-4 font-bold">
+                  {index + 1}
+                </td>
+
+                <td>{player.player.display_name}</td>
+
+                <td>{player.player.country}</td>
+
+                <td className="font-bold text-green-400">
+                  {value.toFixed(3)}
+                </td>
+
               </tr>
-            </thead>
 
-            <tbody>
-              {players.map((player, index) => (
-                <tr
-                  key={player.id}
-                  className="cursor-pointer border-b border-slate-800 transition hover:bg-slate-900"
-                >
-                  <td className="p-4 text-center font-bold">
-                    {index === 0
-                      ? "🥇"
-                      : index === 1
-                      ? "🥈"
-                      : index === 2
-                      ? "🥉"
-                      : index + 1}
-                  </td>
+            );
 
-                  <td className="p-4 font-semibold text-green-400">
-                    {player.name}
-                  </td>
+          })}
 
-                  <td className="p-4 text-center">
-                    {player.country ?? "-"}
-                  </td>
+        </tbody>
 
-                  <td className="p-4 text-center">
-                    {player.tournaments}
-                  </td>
+      </table>
 
-                  <td
-                    className={`p-4 text-right font-bold ${
-                      player.average >= 0
-                        ? "text-green-400"
-                        : "text-red-400"
-                    }`}
-                  >
-                    {player.average.toFixed(2)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
     </div>
   );
 }

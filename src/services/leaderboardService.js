@@ -1,49 +1,41 @@
-import { calculateCGI } from "./cgiService";
+import { calculatePlayerAnalytics } from "../utils/playerAnalytics";
 
-/**
- * Builds a leaderboard from raw player statistics.
- */
-export function buildLeaderboard(players, statField) {
-  const playerMap = {};
+export function getTopPlayers(players, statField = "cgi") {
+  const groupedPlayers = new Map();
 
-  players.forEach((player) => {
-    const id = player.player.id;
+  // Group all tournament rounds by player
+  for (const round of players) {
+    const id = String(round.player.id);
 
-    let value;
+    if (!groupedPlayers.has(id)) {
+      groupedPlayers.set(id, []);
+    }
 
+    groupedPlayers.get(id).push(round);
+  }
+
+  // Calculate analytics for every player
+  const leaderboard = [];
+
+  for (const rounds of groupedPlayers.values()) {
+    const analytics = calculatePlayerAnalytics(rounds);
+
+    if (analytics) {
+      leaderboard.push(analytics);
+    }
+  }
+
+  // Sort by requested statistic
+  leaderboard.sort((a, b) => {
     if (statField === "cgi") {
-      value = calculateCGI(player);
-    } else {
-      value = player[statField];
+      return b.averages.cgi - a.averages.cgi;
     }
 
-    if (value == null) return;
-
-    if (!playerMap[id]) {
-      playerMap[id] = {
-        id,
-        name: player.player.display_name,
-        country: player.player.country_code,
-        total: 0,
-        tournaments: 0,
-      };
-    }
-
-    playerMap[id].total += value;
-    playerMap[id].tournaments++;
+    return (
+      (b.averages?.[statField] ?? 0) -
+      (a.averages?.[statField] ?? 0)
+    );
   });
 
-  return Object.values(playerMap)
-    .map((player) => ({
-      ...player,
-      average: player.total / player.tournaments,
-    }))
-    .sort((a, b) => b.average - a.average);
-}
-
-/**
- * Returns the Top N players.
- */
-export function getTopPlayers(players, statField, limit = 20) {
-  return buildLeaderboard(players, statField).slice(0, limit);
+  return leaderboard.slice(0, 20);
 }

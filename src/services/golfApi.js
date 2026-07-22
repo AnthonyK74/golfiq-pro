@@ -1,4 +1,5 @@
 console.log("ENV:", import.meta.env);
+
 const API_KEY = import.meta.env.VITE_BALLDONTLIE_API_KEY;
 
 const BASE_URL = "https://api.balldontlie.io";
@@ -31,11 +32,30 @@ export async function getPlayers() {
 }
 
 export async function getCompletedTournaments() {
-  return request("/pga/v2/tournaments?status=COMPLETED&per_page=5");
+  return request(
+    "/pga/v2/tournaments?status=COMPLETED&per_page=5"
+  );
 }
 
-export async function getTournamentStats(tournamentId, page = 1) {
+export async function getUpcomingTournaments() {
+  return request(
+    "/pga/v2/tournaments?status=SCHEDULED&per_page=20"
+  );
+}
+
+export async function getTournamentStats(
+  tournamentId,
+  page = 1
+) {
   return request(
     `/pga/v1/player_round_stats?tournament_ids[]=${tournamentId}&round_number=-1&per_page=100&page=${page}`
+  );
+}
+
+export async function getTournament(
+  tournamentId
+) {
+  return request(
+    `/pga/v2/tournaments?id=${tournamentId}`
   );
 }
