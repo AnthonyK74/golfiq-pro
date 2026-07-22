@@ -1,27 +1,47 @@
 export default function DashboardCard({ card, setPage }) {
+  const Icon = card.icon;
+
+  const handleClick = () => {
+    switch (card.title) {
+      case "World Rankings":
+        setPage("world-rankings");
+        break;
+
+      case "Player Search":
+        setPage("player-search");
+        break;
+
+      case "Live Tournaments":
+        setPage("schedule");
+        break;
+
+      case "Statistics":
+        setPage("statistics");
+        break;
+
+      case "Predictions":
+        setPage("predictions");
+        break;
+
+      case "GOAT Rankings":
+        setPage("goat-rankings");
+        break;
+
+      default:
+        break;
+    }
+  };
+
   return (
     <button
-      onClick={() => {
-        if (card.title === "World Rankings") {
-          setPage("world-rankings");
-        } else {
-          alert(`${card.title} coming soon!`);
-        }
-      }}
-      className="group rounded-2xl border border-slate-800 bg-slate-900 p-6 text-left transition hover:-translate-y-1 hover:border-green-400 hover:shadow-xl"
+      onClick={handleClick}
+      className="rounded-2xl border border-slate-800 bg-slate-900 p-6 text-left transition duration-300 hover:scale-105 hover:border-green-400"
     >
-      <card.icon
-        size={44}
-        className="text-green-400 transition group-hover:scale-110"
-      />
+      <Icon className="mb-4 h-10 w-10 text-green-400" />
 
-      <h3 className="mt-4 text-2xl font-bold">
-        {card.title}
-      </h3>
+      <h2 className="text-2xl font-bold">{card.title}</h2>
 
-      <p className="mt-2 text-slate-400">
-        {card.desc}
-      </p>
+      <p className="mt-2 text-slate-400">{card.desc}</p>
     </button>
   );
 }

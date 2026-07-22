@@ -11,7 +11,7 @@ export default function WorldRankings({ setPage }) {
     { rank: 9, name: "Viktor Hovland", country: "🇳🇴" },
     { rank: 10, name: "Justin Thomas", country: "🇺🇸" },
   ];
-
+console.log("setPage =", setPage);
   return (
     <div>
       <button
