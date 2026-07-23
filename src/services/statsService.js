@@ -11,6 +11,7 @@ import {
 } from "./cacheService";
 
 import { calculatePlayerAnalytics } from "../utils/playerAnalytics";
+import { calculateGolfIQRating } from "./golfiqRating";
 
 async function loadPlayerStats() {
   if (hasCache()) {
@@ -120,9 +121,14 @@ async function loadAnalysedPlayers(mode = "starts") {
     const analytics =
       calculatePlayerAnalytics(selectedRounds);
 
-    if (analytics) {
-      players.push(analytics);
-    }
+    if (!analytics) continue;
+
+    const golfIQ = calculateGolfIQRating(analytics);
+
+    players.push({
+      ...analytics,
+      golfIQ,
+    });
   }
 
   return players;
@@ -139,14 +145,25 @@ export async function getLeaderboard(
   const players = await loadAnalysedPlayers(mode);
 
   players.sort((a, b) => {
-    if (statField === "cgi") {
-      return b.averages.cgi - a.averages.cgi;
-    }
+    switch (statField) {
+      case "golfiq":
+        return (
+          b.golfIQ.rating -
+          a.golfIQ.rating
+        );
 
-    return (
-      (b.averages?.[statField] ?? 0) -
-      (a.averages?.[statField] ?? 0)
-    );
+      case "cgi":
+        return (
+          b.averages.cgi -
+          a.averages.cgi
+        );
+
+      default:
+        return (
+          (b.averages?.[statField] ?? 0) -
+          (a.averages?.[statField] ?? 0)
+        );
+    }
   });
 
   return players.slice(0, 20);
@@ -160,9 +177,30 @@ export async function getPlayer(
 
   return (
     players.find(
-      (p) => String(p.player.id) === String(id)
+      (p) =>
+        String(p.player.id) ===
+        String(id)
     ) ?? null
   );
+}
+
+export async function searchPlayers(
+  search,
+  mode = "starts"
+) {
+  const players =
+    await loadAnalysedPlayers(mode);
+
+  if (!search) return players;
+
+  const term = search.toLowerCase();
+
+  return players.filter((p) => {
+    const fullName =
+      `${p.player.first_name} ${p.player.last_name}`.toLowerCase();
+
+    return fullName.includes(term);
+  });
 }
 
 export function refreshStatistics() {

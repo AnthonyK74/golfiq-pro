@@ -1,60 +1,95 @@
 import { calculateCourseFit } from "./courseFit";
+import { calculateGolfIQRating } from "../services/golfiqRating";
 
 function clamp(value, min = 0, max = 100) {
   return Math.max(min, Math.min(max, value));
 }
 
+function round(value) {
+  return Number(value.toFixed(2));
+}
+
 export function calculateTournamentPrediction(player) {
-  if (!player || !player.averages) return null;
+  if (!player?.averages) return null;
 
   const courseFit = calculateCourseFit(player);
 
   if (!courseFit) return null;
 
-  const cgi = player.averages.cgi;
-  const confidence = player.confidence ?? 50;
-  const consistency = player.consistency ?? 3;
+  const averages = player.averages;
+  const { rating: golfIQRating } = calculateGolfIQRating(player);
+
+  const trend =
+    player.trend ??
+    (player.formTrend ?? "➡ Stable");
 
   const trendBonus =
-    player.trend === "🔥 Hot"
-      ? 8
-      : player.trend === "📈 Improving"
-      ? 4
-      : player.trend === "➡ Stable"
+    trend === "🔥 Hot"
+      ? 5
+      : trend === "📈 Improving"
+      ? 3
+      : trend === "➡ Stable"
       ? 0
-      : -5;
+      : -3;
+
+  const confidence = player.confidence ?? 70;
+  const consistency = player.consistency ?? 70;
 
   const rating =
-    cgi * 6 +
-    courseFit.score * 0.35 +
-    confidence * 0.20 +
-    consistency * 2 +
+    golfIQRating * 0.35 +
+    (averages.cgi ?? 0) * 4.5 +
+    (averages.sg_approach ?? 0) * 18 +
+    (averages.sg_off_tee ?? 0) * 12 +
+    (averages.sg_putting ?? 0) * 10 +
+    (averages.sg_around_green ?? 0) * 8 +
+    (averages.sg_total ?? 0) * 6 +
+    (averages.greens_in_regulation ?? 0) * 0.18 +
+    (averages.driving_accuracy ?? 0) * 0.12 +
+    (averages.scrambling ?? 0) * 0.10 +
+    (averages.birdies ?? 0) * 1.8 +
+    (averages.eagles ?? 0) * 4 +
+    (courseFit.score ?? 0) * 0.45 +
+    confidence * 0.10 +
+    consistency * 0.08 +
     trendBonus;
 
-  const win = clamp(rating * 0.22);
-  const top5 = clamp(win * 2.4);
-  const top10 = clamp(top5 * 1.55);
-  const top20 = clamp(top10 * 1.30);
-  const makeCut = clamp(top20 + 10);
+  const strength = rating / 2.4;
+
+  const win = clamp(strength * 0.32, 0, 35);
+  const top5 = clamp(win * 2.45, win, 60);
+  const top10 = clamp(top5 * 1.55, top5, 82);
+  const top20 = clamp(top10 * 1.22, top10, 96);
+  const makeCut = clamp(top20 + 8, 55, 99);
 
   return {
-    rating: Number(rating.toFixed(1)),
-    win: Number(win.toFixed(1)),
-    top5: Number(top5.toFixed(1)),
-    top10: Number(top10.toFixed(1)),
-    top20: Number(top20.toFixed(1)),
-    makeCut: Number(makeCut.toFixed(1)),
+    golfIQRating: round(golfIQRating),
+    rating: round(rating),
+    win: round(win),
+    top5: round(top5),
+    top10: round(top10),
+    top20: round(top20),
+    makeCut: round(makeCut),
+    confidence: round(confidence),
+    consistency: round(consistency),
     courseFit,
+    trend,
   };
 }
 
-export function rankTournament(players) {
+export function rankTournament(players = []) {
   return players
-    .map((player) => ({
-      ...player,
-      prediction: calculateTournamentPrediction(player),
-    }))
-    .filter((player) => player.prediction)
+    .map((player) => {
+      const prediction = calculateTournamentPrediction(player);
+
+      if (!prediction) return null;
+
+      return {
+        ...player,
+        prediction,
+        trend: prediction.trend,
+      };
+    })
+    .filter(Boolean)
     .sort(
       (a, b) =>
         b.prediction.rating - a.prediction.rating

@@ -13,6 +13,7 @@ import Statistics from "./pages/Statistics";
 import Predictions from "./pages/Predictions";
 import CourseFit from "./pages/CourseFit";
 import GoatRankings from "./pages/GoatRankings";
+import TournamentPredictor from "./pages/TournamentPredictor";
 
 export default function App() {
   return (
@@ -59,6 +60,11 @@ export default function App() {
             <Route
               path="/predictions"
               element={<Predictions />}
+            />
+
+            <Route
+              path="/tournament-predictor"
+              element={<TournamentPredictor />}
             />
 
             <Route

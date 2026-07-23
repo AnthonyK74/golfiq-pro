@@ -1,44 +1,95 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useGolfIQ } from "../context/GolfIQContext";
-
-const OPTIONS = [
-  { label: "🏆 GolfIQ Rankings (CGI)", value: "cgi" },
-  { label: "🏌️ SG Off The Tee", value: "sg_off_tee" },
-  { label: "🎯 SG Approach", value: "sg_approach" },
-  { label: "🌱 SG Around Green", value: "sg_around_green" },
-  { label: "⛳ SG Putting", value: "sg_putting" },
-  { label: "⭐ SG Total", value: "sg_total" },
-];
+import PlayerCard from "../components/PlayerCard";
 
 export default function Statistics() {
-  const navigate = useNavigate();
-
   const { players, loading } = useGolfIQ();
 
-  const [stat, setStat] = useState("cgi");
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("golfiq");
 
-  const leaderboard = useMemo(() => {
-    const sorted = [...players];
+  const filteredPlayers = useMemo(() => {
+    const data = [...players];
 
-    sorted.sort((a, b) => {
-      if (stat === "cgi") {
-        return b.averages.cgi - a.averages.cgi;
+    const term = search.trim().toLowerCase();
+
+    const filtered = data.filter((player) =>
+      player.player.display_name
+        .toLowerCase()
+        .includes(term)
+    );
+
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case "golfiq":
+          return (
+            (b.golfIQ?.rating ?? 0) -
+            (a.golfIQ?.rating ?? 0)
+          );
+
+        case "cgi":
+          return (
+            b.averages.cgi -
+            a.averages.cgi
+          );
+
+        case "total":
+          return (
+            b.averages.sg_total -
+            a.averages.sg_total
+          );
+
+        case "ott":
+          return (
+            b.averages.sg_off_tee -
+            a.averages.sg_off_tee
+          );
+
+        case "app":
+          return (
+            b.averages.sg_approach -
+            a.averages.sg_approach
+          );
+
+        case "arg":
+          return (
+            b.averages.sg_around_green -
+            a.averages.sg_around_green
+          );
+
+        case "putt":
+          return (
+            b.averages.sg_putting -
+            a.averages.sg_putting
+          );
+
+        case "distance":
+          return (
+            b.averages.driving_distance -
+            a.averages.driving_distance
+          );
+
+        case "accuracy":
+          return (
+            b.averages.driving_accuracy -
+            a.averages.driving_accuracy
+          );
+
+        default:
+          return (
+            (b.golfIQ?.rating ?? 0) -
+            (a.golfIQ?.rating ?? 0)
+          );
       }
-
-      return (
-        (b.averages?.[stat] ?? 0) -
-        (a.averages?.[stat] ?? 0)
-      );
     });
 
-    return sorted;
-  }, [players, stat]);
+    return filtered;
+  }, [players, search, sortBy]);
 
   if (loading) {
     return (
-      <div className="p-10 text-xl text-slate-400">
-        Loading Statistics...
+      <div className="py-20 text-center text-xl text-slate-400">
+        Loading GolfIQ Statistics...
       </div>
     );
   }
@@ -46,91 +97,123 @@ export default function Statistics() {
   return (
     <div className="space-y-8">
 
-      <button
-        onClick={() => navigate("/")}
-        className="rounded-xl bg-green-500 px-5 py-3 font-bold text-slate-900 hover:bg-green-400"
-      >
-        ← Back to Dashboard
-      </button>
+      <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
 
-      <div className="flex items-center justify-between">
+        <div>
 
-        <h1 className="text-5xl font-bold text-green-400">
-          GolfIQ Rankings
-        </h1>
+          <h1 className="text-5xl font-bold text-green-400">
+            GolfIQ Rankings
+          </h1>
 
-        <select
-          value={stat}
-          onChange={(e) => setStat(e.target.value)}
-          className="rounded-lg border border-slate-700 bg-slate-900 p-3 text-white"
-        >
-          {OPTIONS.map((option) => (
-            <option
-              key={option.value}
-              value={option.value}
-            >
-              {option.label}
-            </option>
-          ))}
-        </select>
+          <p className="mt-2 text-slate-400">
+            Live player analytics from the last five starts
+          </p>
+
+        </div>
+
+        <div className="rounded-xl bg-slate-900 px-6 py-4 text-center">
+
+          <div className="text-sm text-slate-400">
+            Players Analysed
+          </div>
+
+          <div className="text-3xl font-bold text-green-400">
+            {players.length}
+          </div>
+
+        </div>
 
       </div>
 
-      <table className="w-full">
+      <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
 
-        <thead>
+        <div className="grid gap-4 lg:grid-cols-2">
 
-          <tr className="border-b border-slate-700 text-left">
+          <input
+            type="text"
+            placeholder="Search player..."
+            value={search}
+            onChange={(e) =>
+              setSearch(e.target.value)
+            }
+            className="rounded-xl border border-slate-700 bg-slate-800 p-4 text-white outline-none focus:border-green-400"
+          />
 
-            <th className="pb-3">Rank</th>
-            <th>Player</th>
-            <th>Country</th>
-            <th>Value</th>
+          <select
+            value={sortBy}
+            onChange={(e) =>
+              setSortBy(e.target.value)
+            }
+            className="rounded-xl border border-slate-700 bg-slate-800 p-4 text-white outline-none focus:border-green-400"
+          >
+            <option value="golfiq">
+              GolfIQ Rating
+            </option>
 
-          </tr>
+            <option value="cgi">
+              Combined Golf Index
+            </option>
 
-        </thead>
+            <option value="total">
+              SG Total
+            </option>
 
-        <tbody>
+            <option value="ott">
+              SG Off The Tee
+            </option>
 
-          {leaderboard.map((player, index) => {
+            <option value="app">
+              SG Approach
+            </option>
 
-            const value =
-              stat === "cgi"
-                ? player.averages.cgi
-                : player.averages[stat];
+            <option value="arg">
+              SG Around Green
+            </option>
 
-            return (
+            <option value="putt">
+              SG Putting
+            </option>
 
-              <tr
-                key={player.player.id}
-                onClick={() =>
-                  navigate(`/player/${player.player.id}`)
-                }
-                className="cursor-pointer border-b border-slate-800 hover:bg-slate-900"
-              >
+            <option value="distance">
+              Driving Distance
+            </option>
 
-                <td className="py-4 font-bold">
-                  {index + 1}
-                </td>
+            <option value="accuracy">
+              Driving Accuracy
+            </option>
 
-                <td>{player.player.display_name}</td>
+          </select>
 
-                <td>{player.player.country}</td>
+        </div>
 
-                <td className="font-bold text-green-400">
-                  {value.toFixed(3)}
-                </td>
+      </div>
 
-              </tr>
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
 
-            );
+        {filteredPlayers.map((player) => (
+          <PlayerCard
+            key={player.player.id}
+            player={player}
+          />
+        ))}
 
-          })}
+      </div>
 
-        </tbody>
+      <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6 text-center">
 
-      </table>
+        <div className="text-lg">
+
+          Showing{" "}
+
+          <span className="font-bold text-green-400">
+            {filteredPlayers.length}
+          </span>{" "}
+
+          golfers
+
+        </div>
+
+      </div>
 
     </div>
   );
