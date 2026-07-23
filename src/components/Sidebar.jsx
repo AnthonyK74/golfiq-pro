@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 const links = [
   { name: "🏠 Dashboard", path: "/" },
 
-  { name: "📊 GolfIQ Rankings", path: "/statistics" },
+ { name: "📈 GolfIQ Power Rankings", path: "/golfiq" },
 
   { name: "🌍 World Rankings", path: "/world-rankings" },
 

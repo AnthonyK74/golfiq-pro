@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { getLastFiveTournamentStats } from "../services/golfApi";
 import { Link } from "react-router-dom";
 import { useGolfIQ } from "../context/GolfIQContext";
 import PlayerCard from "../components/PlayerCard";

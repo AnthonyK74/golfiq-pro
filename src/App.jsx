@@ -14,6 +14,11 @@ import Predictions from "./pages/Predictions";
 import CourseFit from "./pages/CourseFit";
 import GoatRankings from "./pages/GoatRankings";
 import TournamentPredictor from "./pages/TournamentPredictor";
+import TournamentHub from "./pages/TournamentHub";
+import Leaderboard from "./pages/Leaderboard";
+import GolfIQRankings from "./pages/GolfIQRankings";
+import GolfIQPowerRankings from "./pages/GolfIQPowerRankings";
+import PlayerIntelligence from "./pages/PlayerIntelligence";
 
 export default function App() {
   return (
@@ -26,7 +31,10 @@ export default function App() {
         <main className="p-8">
           <Routes>
             <Route path="/" element={<Dashboard />} />
-
+<Route
+  path="/player/:id"
+  element={<PlayerIntelligence />}
+/>
             <Route
               path="/statistics"
               element={<Statistics />}
@@ -51,12 +59,28 @@ export default function App() {
               path="/compare"
               element={<ComparePlayers />}
             />
-
+<Route
+  path="/golfiq"
+  element={<GolfIQPowerRankings />}
+/>
             <Route
               path="/schedule"
               element={<Schedule />}
             />
 
+            <Route
+              path="/tournament/:id"
+              element={<TournamentHub />}
+            />
+
+            <Route
+              path="/tournament/:id/leaderboard"
+              element={<Leaderboard />}
+            />
+<Route
+  path="/tournament/:id/golfiq"
+  element={<GolfIQRankings />}
+/>
             <Route
               path="/predictions"
               element={<Predictions />}

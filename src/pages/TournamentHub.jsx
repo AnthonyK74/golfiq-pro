@@ -1,114 +1,158 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { getUpcomingTournaments } from "../services/golfApi";
+import { useNavigate, useParams } from "react-router-dom";
+import { getTournamentDetails } from "../services/tournamentService";
 
 export default function TournamentHub() {
   const navigate = useNavigate();
+  const { id } = useParams();
 
-  const [events, setEvents] = useState([]);
+  const [tournament, setTournament] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    async function loadEvents() {
+    async function loadTournament() {
       try {
         setLoading(true);
 
-        const response = await getUpcomingTournaments();
+        const tournament = await getTournamentDetails(id);
 
-        setEvents(response.data ?? []);
+setTournament(tournament);
       } catch (err) {
         console.error(err);
-        setError("Unable to load tournaments.");
+        setError("Unable to load tournament.");
       } finally {
         setLoading(false);
       }
     }
 
-    loadEvents();
-  }, []);
+    loadTournament();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-7xl py-20 text-center text-slate-400">
+        Loading tournament...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="mx-auto max-w-7xl py-20">
+        <div className="rounded-xl border border-red-500 bg-red-900/20 p-6">
+          {error}
+        </div>
+      </div>
+    );
+  }
+
+  if (!tournament) {
+    return (
+      <div className="mx-auto max-w-7xl py-20 text-center text-slate-400">
+        Tournament not found.
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-7xl">
 
       <button
-        onClick={() => navigate("/")}
+        onClick={() => navigate(-1)}
         className="mb-8 rounded-xl bg-green-500 px-5 py-3 font-bold text-slate-900 hover:bg-green-400"
       >
-        ← Back to Dashboard
+        ← Back
       </button>
 
-      <h1 className="mb-2 text-4xl font-bold text-green-400">
-        🏆 Tournament Hub
-      </h1>
+      <div className="rounded-2xl border border-slate-800 bg-slate-900 p-8">
 
-      <p className="mb-8 text-slate-400">
-        Select a PGA Tour event to view predictions, course fit, field analysis
-        and live information.
-      </p>
-
-      {loading && (
-        <div className="py-20 text-center text-slate-400">
-          Loading tournaments...
+        <div className="mb-4 inline-block rounded-full bg-green-500 px-3 py-1 text-sm font-bold text-slate-900">
+          {tournament.status}
         </div>
-      )}
 
-      {error && (
-        <div className="rounded-xl border border-red-500 bg-red-900/20 p-6">
-          {error}
-        </div>
-      )}
+        <h1 className="text-4xl font-bold text-green-400">
+          {tournament.name}
+        </h1>
 
-      {!loading && !error && (
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
 
-          {events.map((event) => (
+          <InfoCard
+            title="Course"
+            value={tournament.course_name || "TBA"}
+          />
 
-            <div
-              key={event.id}
-              className="rounded-2xl border border-slate-800 bg-slate-900 p-6 transition hover:border-green-500"
-            >
-              <h2 className="text-2xl font-bold text-green-400">
-                {event.name}
-              </h2>
+          <InfoCard
+            title="Location"
+            value={[
+              tournament.city,
+              tournament.state,
+              tournament.country,
+            ]
+              .filter(Boolean)
+              .join(", ")}
+          />
 
-              <p className="mt-3 text-slate-300">
-                📅 {event.start_date}
-              </p>
+          <InfoCard
+            title="Start Date"
+            value={tournament.start_date}
+          />
 
-              <p className="mt-2 text-slate-400">
-                {event.course ?? "Course information coming soon"}
-              </p>
+          <InfoCard
+            title="End Date"
+            value={tournament.end_date}
+          />
 
-              <div className="mt-6 flex flex-wrap gap-3">
+          <InfoCard
+            title="Purse"
+            value={tournament.purse || "TBA"}
+          />
 
-                <button
-                  className="rounded-lg bg-green-500 px-4 py-2 font-semibold text-slate-900 hover:bg-green-400"
-                >
-                  Tournament Predictor
-                </button>
-
-                <button
-                  className="rounded-lg bg-slate-800 px-4 py-2 hover:bg-slate-700"
-                >
-                  Course Fit
-                </button>
-
-                <button
-                  className="rounded-lg bg-slate-800 px-4 py-2 hover:bg-slate-700"
-                >
-                  Field Analysis
-                </button>
-
-              </div>
-
-            </div>
-
-          ))}
+          <InfoCard
+            title="Season"
+            value={tournament.season}
+          />
 
         </div>
-      )}
 
+        <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+<button
+  onClick={() => navigate(`/tournament/${id}/leaderboard`)}
+  className="rounded-xl bg-green-500 py-4 font-bold text-slate-900 hover:bg-green-400"
+>
+  📊 Tournament Statistics
+</button>
+          
+
+          <button onClick={() => navigate(`/tournament/${id}/golfiq`)}
+  className="rounded-xl bg-slate-800 py-4 hover:bg-slate-700"
+>
+  ⭐ GolfIQ Rankings
+          </button>
+
+          <button className="rounded-xl bg-slate-800 py-4 hover:bg-slate-700">
+            🎯 Course Fit
+          </button>
+
+          <button className="rounded-xl bg-slate-800 py-4 hover:bg-slate-700">
+            🏆 Tournament Predictor
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
+
+function InfoCard({ title, value }) {
+  return (
+    <div className="rounded-xl bg-slate-950 p-5">
+      <div className="text-sm text-slate-400">{title}</div>
+      <div className="mt-2 text-lg font-bold text-white">
+        {value || "N/A"}
+      </div>
     </div>
   );
 }
