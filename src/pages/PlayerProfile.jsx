@@ -29,7 +29,7 @@ export default function PlayerProfile() {
     return (
       <div className="p-10">
         <button
-          onClick={() => navigate("/statistics")}
+          onClick={() => navigate(-1)}
           className="mb-6 rounded-xl bg-green-500 px-5 py-3 font-bold text-slate-900"
         >
           ← Back
@@ -50,7 +50,7 @@ export default function PlayerProfile() {
     <div className="space-y-8">
 
       <button
-        onClick={() => navigate("/statistics")}
+        onClick={() => navigate(-1)}
         className="rounded-xl bg-green-500 px-5 py-3 font-bold text-slate-900 hover:bg-green-400"
       >
         ← Back to Statistics
