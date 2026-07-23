@@ -1,8 +1,11 @@
 console.log("ENV:", import.meta.env);
 
 const API_KEY = import.meta.env.VITE_BALLDONTLIE_API_KEY;
-
 const BASE_URL = "https://api.balldontlie.io";
+
+// Cache for the last five tournament stats
+let lastFiveStatsCache = null;
+let lastFiveStatsPromise = null;
 
 async function request(endpoint) {
   console.log("Calling:", `${BASE_URL}${endpoint}`);
@@ -31,7 +34,7 @@ export async function getCompletedTournaments() {
   return request("/pga/v2/tournaments?status=COMPLETED&per_page=5");
 }
 
-// Tournament schedule (all available tournaments)
+// Tournament schedule
 export async function getUpcomingTournaments() {
   return request("/pga/v2/tournaments?per_page=20");
 }
@@ -47,33 +50,49 @@ export async function getTournamentStats(tournamentId, page = 1) {
 export async function getTournament(tournamentId) {
   return request(`/pga/v2/tournaments?id=${tournamentId}`);
 }
-export async function getLastFiveTournamentStats() {
-  // Get the latest completed tournaments
-  const tournaments = await getCompletedTournaments();
 
-  const tournamentList = tournaments.data ?? tournaments;
-
-  const allStats = [];
-
-  for (const tournament of tournamentList.slice(0, 5)) {
-    try {
-      const stats = await getTournamentStats(tournament.id);
-
-      const rows = stats.data ?? stats;
-
-      rows.forEach((row) => {
-        allStats.push({
-          ...row,
-          tournamentName: tournament.name,
-        });
-      });
-    } catch (err) {
-      console.error(
-        `Failed to load tournament ${tournament.id}`,
-        err
-      );
-    }
+// Last five tournament statistics (cached)
+export async function getLastFiveTournamentStats(forceRefresh = false) {
+  if (!forceRefresh && lastFiveStatsCache) {
+    return lastFiveStatsCache;
   }
 
-  return allStats;
+  if (!forceRefresh && lastFiveStatsPromise) {
+    return lastFiveStatsPromise;
+  }
+
+  lastFiveStatsPromise = (async () => {
+    const tournaments = await getCompletedTournaments();
+
+    const tournamentList = tournaments.data ?? tournaments;
+
+    const allStats = [];
+
+    for (const tournament of tournamentList.slice(0, 5)) {
+      try {
+        const stats = await getTournamentStats(tournament.id);
+
+        const rows = stats.data ?? stats;
+
+        rows.forEach((row) => {
+          allStats.push({
+            ...row,
+            tournamentName: tournament.name,
+          });
+        });
+      } catch (err) {
+        console.error(
+          `Failed to load tournament ${tournament.id}`,
+          err
+        );
+      }
+    }
+
+    lastFiveStatsCache = allStats;
+    lastFiveStatsPromise = null;
+
+    return allStats;
+  })();
+
+  return lastFiveStatsPromise;
 }
