@@ -14,7 +14,11 @@ export default function Leaderboard() {
       try {
         const data = await getTournamentStatistics(id);
 
-        const stats = Array.isArray(data) ? data : [];
+const stats = Array.isArray(data)
+  ? data
+  : Array.isArray(data?.data)
+    ? data.data
+    : [];
 
         // Sort by SG Total (highest first)
         stats.sort(

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getTournamentStats } from "../services/golfApi";
+import { calculateGolfIQ } from "../utils/golfiqRating";
 
 export default function GolfIQRankings() {
 
@@ -27,24 +28,15 @@ console.log("Response.data:", response.data);
         }
 
         const rankings = data.map((player) => {
-          const sgOtt = Number(player.sg_off_tee ?? 0);
-          const sgApp = Number(player.sg_approach ?? 0);
-          const sgArg = Number(player.sg_around_green ?? 0);
-          const sgPutt = Number(player.sg_putting ?? 0);
+          const golfIQ = calculateGolfIQ(player);
 
-          const golfIQ =
-            (1.5 * sgApp) +
-            (1.2 * sgOtt) +
-            (1.0 * sgPutt) +
-            (0.8 * sgArg);
-
-          return {
-            ...player,
-            golfIQ,
-          };
+return {
+  ...player,
+  golfIQ,
+};
         });
 
-        rankings.sort((a, b) => b.golfIQ - a.golfIQ);
+        rankings.sort((a, b) => b.golfIQ.rating - a.golfIQ.rating);
 console.log("Data length:", data.length);
 console.log("Rankings:", rankings.length);
         setPlayers(rankings);
@@ -115,7 +107,7 @@ console.log("Rankings:", rankings.length);
                 </td>
 
                 <td className="p-3 text-right font-bold text-yellow-400">
-                  {player.golfIQ.toFixed(2)}
+                  {player.golfIQ.rating.toFixed(2)}
                 </td>
 
                 <td className="p-3 text-right">
