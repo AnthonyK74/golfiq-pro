@@ -36,7 +36,7 @@ export async function getCompletedTournaments() {
 
 // Tournament schedule
 export async function getUpcomingTournaments() {
-  return request("/pga/v2/tournaments?per_page=20");
+  return request("/pga/v2/tournaments?season=2026&per_page=100");
 }
 
 // Tournament statistics
@@ -48,7 +48,9 @@ export async function getTournamentStats(tournamentId, page = 1) {
 
 // Single tournament
 export async function getTournament(tournamentId) {
-  return request(`/pga/v2/tournaments?id=${tournamentId}`);
+  return request(
+    `/pga/v2/tournaments?tournament_ids[]=${tournamentId}`
+  );
 }
 
 // Last five tournament statistics (cached)

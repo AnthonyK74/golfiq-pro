@@ -1,3 +1,4 @@
+import { formatDate } from "../utils/dateUtils";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getTournamentDetails } from "../services/tournamentService";
@@ -93,15 +94,15 @@ setTournament(tournament);
               .join(", ")}
           />
 
-          <InfoCard
-            title="Start Date"
-            value={tournament.start_date}
-          />
+<InfoCard
+  title="Start Date"
+  value={formatDate(tournament.start_date)}
+/>
 
-          <InfoCard
-            title="End Date"
-            value={tournament.end_date}
-          />
+<InfoCard
+  title="End Date"
+  value={formatDate(tournament.end_date)}
+/>
 
           <InfoCard
             title="Purse"

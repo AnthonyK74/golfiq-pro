@@ -1,3 +1,5 @@
+import { formatDate, formatDateRange } from "../utils/dateUtils";
+import BackToTop from "../components/BackToTop";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUpcomingTournaments } from "../services/golfApi";
@@ -16,8 +18,6 @@ export default function Schedule() {
 
         const response = await getUpcomingTournaments();
 
-        console.log("Upcoming Tournament Response:", response);
-
         let tournaments = [];
 
         if (Array.isArray(response)) {
@@ -28,7 +28,32 @@ export default function Schedule() {
           tournaments = response.results;
         }
 
-        setEvents(tournaments);
+        tournaments.sort(
+          (a, b) => new Date(a.start_date) - new Date(b.start_date)
+        );
+
+        let featured =
+          tournaments.find(
+            (t) => (t.status || "").toUpperCase() === "LIVE"
+          ) || null;
+
+        if (!featured) {
+          const today = new Date();
+
+          featured =
+            tournaments.find(
+              (t) => new Date(t.start_date) >= today
+            ) || tournaments[tournaments.length - 1];
+        }
+
+        const ordered = featured
+          ? [
+              featured,
+              ...tournaments.filter((t) => t.id !== featured.id),
+            ]
+          : tournaments;
+
+        setEvents(ordered);
       } catch (err) {
         console.error(err);
         setError("Unable to load tournament schedule.");
@@ -53,6 +78,33 @@ export default function Schedule() {
         📅 Tournament Schedule
       </h1>
 
+      {events.length > 0 && !loading && (
+        <div className="mt-8 mb-10 rounded-2xl border-2 border-green-500 bg-slate-900 p-8">
+          <div className="mb-3 text-sm font-bold uppercase tracking-widest text-green-400">
+            ⭐ Featured Tournament
+          </div>
+
+          <h2 className="text-3xl font-bold text-white">
+            {events[0].name}
+          </h2>
+
+          <p className="mt-3 text-slate-300">
+            🏌️ {events[0].course_name || "Course TBA"}
+          </p>
+
+          <p className="text-slate-300">
+            📅 {formatDateRange(events[0].start_date, events[0].end_date)}
+          </p>
+
+          <button
+            onClick={() => navigate(`/tournament/${events[0].id}`)}
+            className="mt-6 rounded-xl bg-green-500 px-6 py-3 font-bold text-slate-900 hover:bg-green-400"
+          >
+            Open Tournament Hub →
+          </button>
+        </div>
+      )}
+
       <p className="mb-8 mt-2 text-slate-400">
         Browse current and upcoming PGA Tour events.
       </p>
@@ -72,14 +124,12 @@ export default function Schedule() {
       {!loading && !error && events.length === 0 && (
         <div className="rounded-xl border border-yellow-600 bg-yellow-950/20 p-6 text-yellow-300">
           No scheduled tournaments were returned by the API.
-          <br />
-          Check the browser console for the full API response.
         </div>
       )}
 
-      {!loading && !error && events.length > 0 && (
+      {!loading && !error && events.length > 1 && (
         <div className="space-y-6">
-          {events.map((event) => (
+          {events.slice(1).map((event) => (
             <div
               key={event.id}
               onClick={() => navigate(`/tournament/${event.id}`)}
@@ -100,7 +150,8 @@ export default function Schedule() {
                   </p>
 
                   <p className="text-slate-300">
-                    📍 {[event.city, event.state, event.country]
+                    📍{" "}
+                    {[event.city, event.state, event.country]
                       .filter(Boolean)
                       .join(", ") || "Location TBA"}
                   </p>
@@ -109,12 +160,12 @@ export default function Schedule() {
                 <div className="grid grid-cols-2 gap-5 lg:min-w-[320px]">
                   <InfoCard
                     title="Start Date"
-                    value={event.start_date ?? "TBA"}
+                    value={formatDate(event.start_date)}
                   />
 
                   <InfoCard
                     title="End Date"
-                    value={event.end_date ?? "TBA"}
+                    value={formatDate(event.end_date)}
                   />
 
                   <InfoCard
@@ -132,6 +183,8 @@ export default function Schedule() {
           ))}
         </div>
       )}
+
+      <BackToTop />
     </div>
   );
 }
