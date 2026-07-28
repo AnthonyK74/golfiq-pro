@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { getTournamentStats } from "../services/golfApi";
-import { calculateGolfIQ } from "../utils/golfiqRating";
+import { useNavigate } from "react-router-dom";
+import { getLeaderboard } from "../services/statsService";
 
 export default function GolfIQRankings() {
-
   const navigate = useNavigate();
-  const { id } = useParams();
 
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,31 +11,7 @@ export default function GolfIQRankings() {
   useEffect(() => {
     async function loadRankings() {
       try {
-       const response = await getTournamentStats(id);
-
-console.log("Response:", response);
-console.log("Response.data:", response.data);
-
-        let data = [];
-
-        if (Array.isArray(response)) {
-          data = response;
-        } else if (Array.isArray(response.data)) {
-          data = response.data;
-        }
-
-        const rankings = data.map((player) => {
-          const golfIQ = calculateGolfIQ(player);
-
-return {
-  ...player,
-  golfIQ,
-};
-        });
-
-        rankings.sort((a, b) => b.golfIQ.rating - a.golfIQ.rating);
-console.log("Data length:", data.length);
-console.log("Rankings:", rankings.length);
+        const rankings = await getLeaderboard("golfiq");
         setPlayers(rankings);
       } catch (err) {
         console.error(err);
@@ -48,7 +21,7 @@ console.log("Rankings:", rankings.length);
     }
 
     loadRankings();
-  }, [id]);
+  }, []);
 
   if (loading) {
     return (
@@ -69,11 +42,11 @@ console.log("Rankings:", rankings.length);
       </button>
 
       <h1 className="mb-2 text-4xl font-bold text-green-400">
-        ⭐ GolfIQ Rankings
+        ⭐ GolfIQ Top 20
       </h1>
 
       <p className="mb-8 text-slate-400">
-        Custom rankings based on your GolfIQ formula
+        Based on each player's last five tournaments
       </p>
 
       <div className="overflow-x-auto rounded-xl border border-slate-700">
@@ -81,53 +54,43 @@ console.log("Rankings:", rankings.length);
         <table className="min-w-full text-sm">
 
           <thead className="bg-slate-900">
-            <tr>
-              <th className="p-3">Rank</th>
-              <th className="p-3 text-left">Player</th>
-              <th className="p-3 text-right">GolfIQ</th>
-              <th className="p-3 text-right">SG OTT</th>
-              <th className="p-3 text-right">SG APP</th>
-              <th className="p-3 text-right">SG ARG</th>
-              <th className="p-3 text-right">SG PUTT</th>
-            </tr>
-          </thead>
+  <tr>
+    <th className="p-3">Rank</th>
+    <th className="p-3 text-left">Player</th>
+    <th className="p-3 text-right">Rating</th>
+    <th className="p-3 text-center">Grade</th>
+    <th className="p-3 text-right">Events</th>
+  </tr>
+</thead>
 
-          <tbody>
-            {players.map((player, index) => (
-              <tr
-                key={player.player.id}
-                className={`border-t border-slate-800 ${
-                  index < 20 ? "bg-green-950/20" : ""
-                }`}
-              >
-                <td className="p-3 font-bold">{index + 1}</td>
+     <tbody>
+  {players.map((player, index) => (
+    <tr
+      key={player.player.id}
+      className="border-t border-slate-800"
+    >
+      <td className="p-3 font-bold">
+        {index + 1}
+      </td>
 
-                <td className="p-3 font-medium">
-                  {player.player.display_name}
-                </td>
+      <td className="p-3 font-medium">
+        {player.player.display_name}
+      </td>
 
-                <td className="p-3 text-right font-bold text-yellow-400">
-                  {player.golfIQ.rating.toFixed(2)}
-                </td>
+      <td className="p-3 text-right font-bold text-green-400">
+        {player.golfIQ.rating.toFixed(1)}
+      </td>
 
-                <td className="p-3 text-right">
-                  {player.sg_off_tee.toFixed(2)}
-                </td>
+      <td className="p-3 text-center font-bold text-yellow-400">
+        {player.golfIQ.grade}
+      </td>
 
-                <td className="p-3 text-right">
-                  {player.sg_approach.toFixed(2)}
-                </td>
-
-                <td className="p-3 text-right">
-                  {player.sg_around_green.toFixed(2)}
-                </td>
-
-                <td className="p-3 text-right">
-                  {player.sg_putting.toFixed(2)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
+      <td className="p-3 text-right">
+        {player.averages.tournaments}
+      </td>
+    </tr>
+  ))}
+</tbody>     
 
         </table>
 

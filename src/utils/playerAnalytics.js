@@ -68,6 +68,16 @@ export function calculateConsistency(history) {
   return Math.round(score);
 }
 
+export function calculateExperienceScore(tournaments) {
+  if (tournaments >= 5) return 100;
+  if (tournaments === 4) return 90;
+  if (tournaments === 3) return 80;
+  if (tournaments === 2) return 65;
+  if (tournaments === 1) return 45;
+
+  return 40;
+}
+
 export function getStrengths(stats) {
   const strengths = [];
 
@@ -126,10 +136,35 @@ export function calculatePredictionScore(
   );
 }
 
-export function calculateConfidence(score) {
-  return Math.round(
-    Math.max(0, Math.min(100, score))
+export function calculateConfidence(
+  consistency,
+  tournaments,
+  trend,
+  predictionScore
+) {
+  const experience =
+    calculateExperienceScore(tournaments);
+
+  let trendScore = 75;
+
+  if (trend === "🔥 Hot") trendScore = 100;
+  else if (trend === "📈 Improving") trendScore = 90;
+  else if (trend === "➡ Stable") trendScore = 80;
+  else if (trend === "📉 Cooling") trendScore = 65;
+  else if (trend === "❄️ Cold") trendScore = 50;
+
+  const predictionStrength = Math.min(
+    100,
+    Math.max(40, predictionScore / 4)
   );
+
+  const confidence =
+    consistency * 0.35 +
+    experience * 0.30 +
+    trendScore * 0.20 +
+    predictionStrength * 0.15;
+
+  return Math.round(confidence);
 }
 
 export function calculatePlayerAnalytics(rounds) {
@@ -196,8 +231,20 @@ export function calculatePlayerAnalytics(rounds) {
       consistency
     );
 
-  const confidence =
-    calculateConfidence(predictionScore);
+const experienceScore =
+  calculateExperienceScore(history.length);
+
+const confidence =
+  calculateConfidence(
+    consistency,
+    history.length,
+    trend,
+    predictionScore
+  );
+
+   
+
+
 
   return {
     ...latest,
@@ -208,13 +255,15 @@ export function calculatePlayerAnalytics(rounds) {
 
     trend,
 
-    trendValue,
+trendValue,
 
-    consistency,
+consistency,
 
-    predictionScore,
+experienceScore,
 
-    confidence,
+predictionScore,
+
+confidence,
 
     strengths: getStrengths(
       averages

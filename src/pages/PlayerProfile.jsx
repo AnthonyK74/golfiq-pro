@@ -53,7 +53,7 @@ export default function PlayerProfile() {
         onClick={() => navigate(-1)}
         className="rounded-xl bg-green-500 px-5 py-3 font-bold text-slate-900 hover:bg-green-400"
       >
-        ← Back to Statistics
+        ← Back
       </button>
 
       <div className="flex flex-col justify-between gap-6 lg:flex-row">
@@ -156,12 +156,34 @@ export default function PlayerProfile() {
 
         <Panel title="GolfIQ">
 
-          <StatRow label="Rating" value={golfIQ.rating.toFixed(1)} />
-          <StatRow label="Grade" value={golfIQ.grade} />
-          <StatRow label="Confidence" value={`${player.confidence}%`} />
-          <StatRow label="Consistency" value={`${player.consistency}%`} />
+  <StatRow label="Rating" value={golfIQ.rating.toFixed(1)} />
+  <StatRow label="Grade" value={golfIQ.grade} />
+  <StatRow label="Confidence" value={`${player.confidence}%`} />
+  <StatRow label="Consistency" value={`${player.consistency}%`} />
 
-        </Panel>
+  <hr className="my-5 border-slate-700" />
+
+  <h3 className="mb-2 font-bold text-green-400">
+    Strengths
+  </h3>
+
+  <ul className="mb-5 list-disc pl-5 text-sm space-y-1">
+    {(player.strengths ?? []).map((strength) => (
+      <li key={strength}>{strength}</li>
+    ))}
+  </ul>
+
+  <h3 className="mb-2 font-bold text-red-400">
+    Weaknesses
+  </h3>
+
+  <ul className="list-disc pl-5 text-sm space-y-1">
+    {(player.weaknesses ?? []).map((weakness) => (
+      <li key={weakness}>{weakness}</li>
+    ))}
+  </ul>
+
+</Panel>
 
       </div>
 
@@ -211,6 +233,7 @@ export default function PlayerProfile() {
               <th>APP</th>
               <th>ARG</th>
               <th>PUTT</th>
+              <th>Trend</th>
 
             </tr>
 
@@ -234,6 +257,9 @@ export default function PlayerProfile() {
                 <td>{Number(round.sg_approach ?? 0).toFixed(2)}</td>
                 <td>{Number(round.sg_around_green ?? 0).toFixed(2)}</td>
                 <td>{Number(round.sg_putting ?? 0).toFixed(2)}</td>
+                <td>
+  {Number(round.sg_total ?? 0) >= 0 ? "📈" : "📉"}
+</td>
 
               </tr>
 

@@ -54,7 +54,11 @@ export function calculateTournamentPrediction(player) {
     trendBonus;
 
   const strength = rating / 2.4;
-
+console.log(
+  player.player.display_name,
+  "Rating:", rating.toFixed(2),
+  "Strength:", strength.toFixed(2)
+);
   const win = clamp(strength * 0.32, 0, 35);
   const top5 = clamp(win * 2.45, win, 60);
   const top10 = clamp(top5 * 1.55, top5, 82);
@@ -77,7 +81,7 @@ export function calculateTournamentPrediction(player) {
 }
 
 export function rankTournament(players = []) {
-  return players
+  const ranked = players
     .map((player) => {
       const prediction = calculateTournamentPrediction(player);
 
@@ -90,8 +94,44 @@ export function rankTournament(players = []) {
       };
     })
     .filter(Boolean)
-    .sort(
-      (a, b) =>
-        b.prediction.rating - a.prediction.rating
+    .sort((a, b) => b.prediction.rating - a.prediction.rating);
+
+  if (ranked.length === 0) return [];
+
+  const ratings = ranked.map((p) => p.prediction.rating);
+
+  const max = Math.max(...ratings);
+  const min = Math.min(...ratings);
+  const range = Math.max(max - min, 1);
+
+  ranked.forEach((player) => {
+    // Normalize to 0–1 across the whole field
+    const strength =
+      (player.prediction.rating - min) / range;
+
+    // Non-linear scaling gives better separation at the top
+    const elite = Math.pow(strength, 0.65);
+
+    player.prediction.win = Number(
+      (0.5 + elite * 17.5).toFixed(1)
     );
+
+    player.prediction.top5 = Number(
+      (4 + elite * 41).toFixed(1)
+    );
+
+    player.prediction.top10 = Number(
+      (10 + elite * 60).toFixed(1)
+    );
+
+    player.prediction.top20 = Number(
+      (20 + elite * 70).toFixed(1)
+    );
+
+    player.prediction.makeCut = Number(
+      (65 + elite * 34).toFixed(1)
+    );
+  });
+
+  return ranked;
 }

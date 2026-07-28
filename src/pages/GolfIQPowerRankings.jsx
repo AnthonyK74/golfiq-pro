@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-import { getLastFiveTournamentStats } from "../services/golfApi";
-import { averagePlayerRatings } from "../utils/golfIQCalculator";
+import { getLeaderboard } from "../services/statsService";
 
 export default function GolfIQPowerRankings() {
   const navigate = useNavigate();
@@ -13,11 +11,9 @@ export default function GolfIQPowerRankings() {
   useEffect(() => {
     async function loadRankings() {
       try {
-        const stats = await getLastFiveTournamentStats();
+        const rankings = await getLeaderboard("golfiq");
 
-        const rankings = averagePlayerRatings(stats);
-
-        setPlayers(rankings);
+setPlayers(rankings);
       } catch (err) {
         console.error(err);
       } finally {
@@ -59,13 +55,14 @@ export default function GolfIQPowerRankings() {
         <table className="min-w-full">
 
           <thead className="bg-slate-900">
-            <tr>
-              <th className="p-4">Rank</th>
-              <th className="p-4 text-left">Player</th>
-              <th className="p-4 text-right">GolfIQ</th>
-              <th className="p-4 text-right">Events</th>
-            </tr>
-          </thead>
+  <tr>
+    <th className="p-4">Rank</th>
+    <th className="p-4 text-left">Player</th>
+    <th className="p-4 text-right">Rating</th>
+    <th className="p-4 text-center">Grade</th>
+    <th className="p-4 text-right">Events</th>
+  </tr>
+</thead>
 
           <tbody>
 
@@ -86,12 +83,16 @@ export default function GolfIQPowerRankings() {
                 </td>
 
                 <td className="p-4 text-right font-bold text-green-400">
-                  {player.averageGolfIQ.toFixed(2)}
-                </td>
+  {player.golfIQ.rating.toFixed(1)}
+</td>
 
-                <td className="p-4 text-right">
-                  {player.tournaments}
-                </td>
+<td className="p-4 text-center font-bold text-yellow-400">
+  {player.golfIQ.grade}
+</td>
+
+<td className="p-4 text-right">
+  {player.averages.tournaments}
+</td>
 
               </tr>
 

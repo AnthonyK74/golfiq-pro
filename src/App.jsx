@@ -33,7 +33,7 @@ export default function App() {
             <Route path="/" element={<Dashboard />} />
 <Route
   path="/player/:id"
-  element={<PlayerIntelligence />}
+  element={<PlayerProfile />}
 />
             <Route
               path="/statistics"

@@ -145,7 +145,15 @@ export default function TournamentPredictor() {
 </th>
 
 <th className="px-4 py-4 text-right">
+  Prediction
+</th>
+
+<th className="px-4 py-4 text-right">
   CGI
+</th>
+
+<th className="px-4 py-4 text-right">
+  Course Fit
 </th>
 
 <th className="px-4 py-4 text-right">
@@ -202,8 +210,16 @@ export default function TournamentPredictor() {
   {player.golfIQ.rating.toFixed(1)}
 </td>
 
+<td className="px-4 py-4 text-right font-bold text-cyan-400">
+  {player.prediction.rating}
+</td>
+
 <td className="px-4 py-4 text-right">
   {player.averages.cgi.toFixed(2)}
+</td>
+
+<td className="px-4 py-4 text-right">
+  {player.prediction.courseFit.score}
 </td>
 
 <td className="px-4 py-4 text-right">
@@ -227,7 +243,12 @@ export default function TournamentPredictor() {
                     </td>
 
                     <td className="px-4 py-4 text-center">
-                      {confidence(player.prediction.win)}
+                      <>
+  <div>{confidence(player.prediction.win)}</div>
+  <div className="text-xs text-slate-400">
+    {player.prediction.confidence}%
+  </div>
+</>
                     </td>
 
                     <td className="px-4 py-4 text-center text-xl">
