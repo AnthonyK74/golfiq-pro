@@ -18,7 +18,6 @@ import TournamentHub from "./pages/TournamentHub";
 import Leaderboard from "./pages/Leaderboard";
 import GolfIQRankings from "./pages/GolfIQRankings";
 import GolfIQPowerRankings from "./pages/GolfIQPowerRankings";
-import PlayerIntelligence from "./pages/PlayerIntelligence";
 
 export default function App() {
   return (
@@ -31,10 +30,7 @@ export default function App() {
         <main className="p-8">
           <Routes>
             <Route path="/" element={<Dashboard />} />
-<Route
-  path="/player/:id"
-  element={<PlayerProfile />}
-/>
+
             <Route
               path="/statistics"
               element={<Statistics />}

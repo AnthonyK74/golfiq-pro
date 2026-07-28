@@ -125,10 +125,53 @@ async function loadAnalysedPlayers(mode = "starts") {
 
     const golfIQ = calculateGolfIQRating(analytics);
 
-    players.push({
-      ...analytics,
-      golfIQ,
-    });
+const metrics = golfIQ.metrics;
+
+const metricList = [
+  ["Off the Tee", metrics.offTee],
+  ["Approach", metrics.approach],
+  ["Around the Green", metrics.aroundGreen],
+  ["Putting", metrics.putting],
+  ["Ball Striking", metrics.ballStriking],
+  ["Short Game", metrics.shortGame],
+];
+
+const sortedMetrics = [...metricList].sort(
+  (a, b) => b[1] - a[1]
+);
+
+const strengths = sortedMetrics
+  .slice(0, 3)
+  .map(([name]) => name);
+
+const weaknesses = sortedMetrics
+  .slice(-2)
+  .map(([name]) => name);
+
+let archetype = "Balanced Player";
+
+if (metrics.offTee >= 85)
+  archetype = "🚀 Power Driver";
+else if (metrics.approach >= 85)
+  archetype = "🎯 Iron Specialist";
+else if (metrics.shortGame >= 85)
+  archetype = "🧙 Short Game Wizard";
+else if (metrics.putting >= 85)
+  archetype = "🎱 Putting Specialist";
+
+players.push({
+  ...analytics,
+
+  golfIQ: {
+    ...golfIQ,
+
+    strengths,
+
+    weaknesses,
+
+    archetype,
+  },
+});
   }
 
   return players;
@@ -165,7 +208,20 @@ export async function getLeaderboard(
         );
     }
   });
+if (statField === "golfiq") {
+  players.forEach((player, index) => {
+    let grade = "C";
 
+    if (index === 0) grade = "S";
+    else if (index < 5) grade = "A+";
+    else if (index < 10) grade = "A";
+    else if (index < 20) grade = "A-";
+    else if (index < 40) grade = "B+";
+    else if (index < 60) grade = "B";
+
+    player.golfIQ.grade = grade;
+  });
+}
   return players.slice(0, 20);
 }
 
