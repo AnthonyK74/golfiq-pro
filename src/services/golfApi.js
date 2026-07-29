@@ -46,11 +46,12 @@ export async function getUpcomingTournaments() {
 }
 
 // Tournament statistics
-export async function getTournamentStats(tournamentId, page = 1) {
+export async function getTournamentStats(tournamentId) {
   return request(
-    `/pga/v1/player_round_stats?tournament_ids[]=${tournamentId}&round_number=-1&per_page=100&page=${page}`
+    `/pga/v1/player_round_stats?tournament_ids[]=${tournamentId}&round_number=-1&per_page=100`
   );
 }
+
 
 // Single tournament
 export async function getTournament(tournamentId) {

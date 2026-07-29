@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { getAllCompletedTournaments } from "../services/golfApi";
+import CourseAnalysis from "../components/CourseAnalysis";
 
 export default function CourseIntelligence() {
   const [season, setSeason] = useState(2026);
   const [tournaments, setTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedTournament, setSelectedTournament] = useState(null);
   const [showTopButton, setShowTopButton] = useState(false);
 
   useEffect(() => {
@@ -14,8 +16,6 @@ export default function CourseIntelligence() {
       try {
         const response = await getAllCompletedTournaments(season);
         setTournaments(response.data ?? response);
-
-        console.log(response.data ?? response);
       } catch (err) {
         console.error(err);
       } finally {
@@ -43,6 +43,15 @@ export default function CourseIntelligence() {
     });
   }
 
+  if (selectedTournament) {
+    return (
+      <CourseAnalysis
+        tournament={selectedTournament}
+        onBack={() => setSelectedTournament(null)}
+      />
+    );
+  }
+
   return (
     <div className="p-6 text-white">
       <h1 className="text-2xl font-bold mb-6">
@@ -50,9 +59,7 @@ export default function CourseIntelligence() {
       </h1>
 
       <div className="mb-6 flex items-center gap-3">
-        <label className="font-semibold">
-          Season:
-        </label>
+        <label className="font-semibold">Season:</label>
 
         <select
           value={season}
@@ -66,7 +73,9 @@ export default function CourseIntelligence() {
       </div>
 
       {loading ? (
-        <p className="text-green-400">Loading tournaments...</p>
+        <p className="text-green-400">
+          Loading tournaments...
+        </p>
       ) : (
         <>
           <h2 className="text-lg font-semibold mb-4">
@@ -77,6 +86,7 @@ export default function CourseIntelligence() {
             {tournaments.map((tournament) => (
               <div
                 key={tournament.id}
+                onClick={() => setSelectedTournament(tournament)}
                 className="border border-slate-700 rounded-lg p-4 hover:border-green-500 hover:bg-slate-900 transition cursor-pointer"
               >
                 <h3 className="text-xl font-bold text-green-400">
