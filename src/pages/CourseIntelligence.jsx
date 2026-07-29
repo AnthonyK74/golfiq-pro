@@ -1,17 +1,21 @@
 import { useEffect, useState } from "react";
-import { getCompletedTournaments } from "../services/golfApi";
-import StatBar from "../components/StatBar";
+import { getAllCompletedTournaments } from "../services/golfApi";
 
 export default function CourseIntelligence() {
+  const [season, setSeason] = useState(2026);
   const [tournaments, setTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedTournament, setSelectedTournament] = useState(null);
+  const [showTopButton, setShowTopButton] = useState(false);
 
   useEffect(() => {
     async function load() {
+      setLoading(true);
+
       try {
-        const response = await getCompletedTournaments();
+        const response = await getAllCompletedTournaments(season);
         setTournaments(response.data ?? response);
+
+        console.log(response.data ?? response);
       } catch (err) {
         console.error(err);
       } finally {
@@ -20,84 +24,88 @@ export default function CourseIntelligence() {
     }
 
     load();
+  }, [season]);
+
+  useEffect(() => {
+    function handleScroll() {
+      setShowTopButton(window.scrollY > 300);
+    }
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  if (loading) {
-    return <h2>Loading...</h2>;
+  function scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }
 
   return (
-    <div style={{ padding: 30 }}>
-      <h1>🧠 Course Intelligence</h1>
+    <div className="p-6 text-white">
+      <h1 className="text-2xl font-bold mb-6">
+        🧠 Course Intelligence
+      </h1>
 
-      <h3>Recent Tournaments</h3>
+      <div className="mb-6 flex items-center gap-3">
+        <label className="font-semibold">
+          Season:
+        </label>
 
-      {tournaments.map((tournament) => (
-        <div
-          key={tournament.id}
-          onClick={() => setSelectedTournament(tournament)}
-          style={{
-            cursor: "pointer",
-            padding: 15,
-            marginBottom: 15,
-            border:
-              selectedTournament?.id === tournament.id
-                ? "2px solid #22c55e"
-                : "1px solid #333",
-            borderRadius: 10,
-          }}
+        <select
+          value={season}
+          onChange={(e) => setSeason(Number(e.target.value))}
+          className="bg-slate-800 border border-slate-600 rounded px-3 py-2"
         >
-          <h2>{tournament.name}</h2>
+          <option value={2026}>2026</option>
+          <option value={2025}>2025</option>
+          <option value={2024}>2024</option>
+        </select>
+      </div>
 
-          <p>
-            <strong>Course:</strong> {tournament.course_name}
-          </p>
+      {loading ? (
+        <p className="text-green-400">Loading tournaments...</p>
+      ) : (
+        <>
+          <h2 className="text-lg font-semibold mb-4">
+            Completed Tournaments ({tournaments.length})
+          </h2>
 
-          <p>
-            <strong>Season:</strong> {tournament.season}
-          </p>
+          <div className="space-y-4">
+            {tournaments.map((tournament) => (
+              <div
+                key={tournament.id}
+                className="border border-slate-700 rounded-lg p-4 hover:border-green-500 hover:bg-slate-900 transition cursor-pointer"
+              >
+                <h3 className="text-xl font-bold text-green-400">
+                  {tournament.name}
+                </h3>
 
-          <p>
-            <strong>Winner:</strong>{" "}
-            {tournament.champion?.display_name}
-          </p>
-        </div>
-      ))}
+                <p>
+                  <strong>Course:</strong>{" "}
+                  {tournament.course_name || "Unknown"}
+                </p>
 
-      {selectedTournament && (
-        <div
-          style={{
-            marginTop: 40,
-            padding: 20,
-            border: "1px solid #444",
-            borderRadius: 10,
-            background: "#111827",
-          }}
-        >
-          <h2>{selectedTournament.name}</h2>
-
-          <p>
-            <strong>Course:</strong> {selectedTournament.course_name}
-          </p>
-
-          <p>
-            <strong>Season:</strong> {selectedTournament.season}
-          </p>
-
-          <h3>🧠 Course Intelligence</h3>
-
-          <p>Loading historical data...</p>
-        </div>
+                <p>
+                  <strong>Season:</strong>{" "}
+                  {tournament.season}
+                </p>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
-      <h2 style={{ marginTop: 40 }}>Course DNA Preview</h2>
-
-      <StatBar label="SG Approach" value={34} />
-      <StatBar label="SG Off The Tee" value={24} />
-      <StatBar label="Putting" value={16} />
-      <StatBar label="Greens In Regulation" value={12} />
-      <StatBar label="Scrambling" value={8} />
-      <StatBar label="Driving Accuracy" value={6} />
+      {showTopButton && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-black font-bold px-4 py-3 rounded-full shadow-lg"
+        >
+          ↑ Top
+        </button>
+      )}
     </div>
   );
 }

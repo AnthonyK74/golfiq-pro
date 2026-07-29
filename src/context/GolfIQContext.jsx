@@ -25,6 +25,8 @@ export function GolfIQProvider({ children }) {
   const [lastUpdated, setLastUpdated] =
     useState(null);
 
+    const [courseDNA, setCourseDNA] = useState(null);
+
   const loadPlayers = useCallback(
     async (mode = analysisMode) => {
       try {
@@ -104,7 +106,8 @@ export function GolfIQProvider({ children }) {
 
     analysisMode,
     setAnalysisMode,
-
+courseDNA,
+setCourseDNA,
     refresh,
   };
 

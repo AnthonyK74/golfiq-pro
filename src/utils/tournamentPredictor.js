@@ -10,10 +10,10 @@ function round(value) {
   return Number(value.toFixed(2));
 }
 
-export function calculateTournamentPrediction(player) {
+export function calculateTournamentPrediction(player, courseDNA = null) {
   if (!player?.averages) return null;
 
-  const courseFit = calculateCourseFit(player);
+  const courseFit = calculateCourseFit(player, courseDNA);
 
   if (!courseFit) return null;
 
@@ -38,9 +38,9 @@ export function calculateTournamentPrediction(player) {
 
   const rating =
     golfIQRating * 0.35 +
-    (averages.cgi ?? 0) * 4.5 +
-    (averages.sg_approach ?? 0) * 18 +
-    (averages.sg_off_tee ?? 0) * 12 +
+    (averages.cgi ?? 0) * 2.5 +
+    (averages.sg_approach ?? 0) * 22 +
+    (averages.sg_off_tee ?? 0) * 16 +
     (averages.sg_putting ?? 0) * 10 +
     (averages.sg_around_green ?? 0) * 8 +
     (averages.sg_total ?? 0) * 6 +
@@ -49,7 +49,7 @@ export function calculateTournamentPrediction(player) {
     (averages.scrambling ?? 0) * 0.10 +
     (averages.birdies ?? 0) * 1.8 +
     (averages.eagles ?? 0) * 4 +
-    (courseFit.score ?? 0) * 0.45 +
+    (courseFit.score ?? 0) * 0.80 +
     confidence * 0.10 +
     consistency * 0.08 +
     trendBonus;
@@ -81,11 +81,11 @@ console.log(
   };
 }
 
-export function rankTournament(players = []) {
+export function rankTournament(players = [], courseDNA = null) {
     const fieldStrength = calculateFieldStrength(players);
   const ranked = players
     .map((player) => {
-      const prediction = calculateTournamentPrediction(player);
+      const prediction = calculateTournamentPrediction(player, courseDNA);
 if (prediction) {
   prediction.rating = Number(
     (prediction.rating * fieldStrength).toFixed(2)

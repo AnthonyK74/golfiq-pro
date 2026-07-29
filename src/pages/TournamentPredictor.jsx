@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useGolfIQ } from "../context/GolfIQContext";
 import { getAllPlayers } from "../services/statsService";
 import { rankTournament } from "../utils/tournamentPredictor";
 
 export default function TournamentPredictor() {
   const navigate = useNavigate();
-
+const { courseDNA } = useGolfIQ();
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -16,7 +17,7 @@ export default function TournamentPredictor() {
         setLoading(true);
 
         const data = await getAllPlayers("starts");
-        const ranked = rankTournament(data).slice(0, 20);
+       const ranked = rankTournament(data, courseDNA).slice(0, 20);
 
         setPlayers(ranked);
       } catch (err) {

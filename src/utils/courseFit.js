@@ -1,4 +1,4 @@
-export function calculateCourseFit(player) {
+export function calculateCourseFit(player, courseDNA = null) {
   if (!player?.averages) return null;
 
   const stats = player.averages;
@@ -45,13 +45,27 @@ export function calculateCourseFit(player) {
   const consistency =
     player.consistency ?? 70;
 
-  const score =
-    driving * 0.22 +
-    approach * 0.33 +
-    shortGame * 0.15 +
-    putting * 0.15 +
-    form * 0.10 +
-    consistency * 0.05;
+  const weights =
+  courseDNA ?? {
+    approach: 33,
+    offTee: 22,
+    aroundGreen: 15,
+    putting: 15,
+    accuracy: 10,
+    scrambling: 5,
+  };
+
+const score =
+  driving *
+    ((weights.offTee + weights.accuracy) / 100) +
+  approach *
+    (weights.approach / 100) +
+  shortGame *
+    ((weights.aroundGreen + weights.scrambling) / 100) +
+  putting *
+    (weights.putting / 100) +
+  form * 0.10 +
+  consistency * 0.05;
 
   let recommendation = "Average";
 
