@@ -14,6 +14,9 @@ export default function GolfIQPowerRankings() {
         const rankings = await getLeaderboard("golfiq");
 
 setPlayers(rankings);
+
+console.log(rankings[0]);
+
       } catch (err) {
         console.error(err);
       } finally {

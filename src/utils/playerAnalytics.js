@@ -170,59 +170,74 @@ export function calculateConfidence(
 export function calculatePlayerAnalytics(rounds) {
   if (!rounds.length) return null;
 
-  const history = [...rounds]
-    .sort(
-      (a, b) =>
-        new Date(b.tournament?.start_date ?? 0) -
-        new Date(a.tournament?.start_date ?? 0)
-    )
-    .slice(0, 5);
+  const sortedRounds = [...rounds].sort(
+    (a, b) =>
+      new Date(b.tournament?.start_date ?? 0) -
+      new Date(a.tournament?.start_date ?? 0)
+  );
 
-  const latest = history[0];
+  // Keep only one record per tournament (latest five tournaments)
+  const uniqueHistory = [];
+  const seen = new Set();
+
+  for (const round of sortedRounds) {
+    const tournamentId = round.tournament?.id;
+
+    if (!seen.has(tournamentId)) {
+      seen.add(tournamentId);
+      uniqueHistory.push(round);
+    }
+
+    if (uniqueHistory.length === 5) break;
+  }
+
+  if (!uniqueHistory.length) return null;
+
+  const latest = uniqueHistory[0];
 
   const averages = {
-    tournaments: history.length,
+    tournaments: uniqueHistory.length,
 
-    sg_off_tee: average(history, "sg_off_tee"),
-    sg_approach: average(history, "sg_approach"),
+    sg_off_tee: average(uniqueHistory, "sg_off_tee"),
+    sg_approach: average(uniqueHistory, "sg_approach"),
     sg_around_green: average(
-      history,
+      uniqueHistory,
       "sg_around_green"
     ),
-    sg_putting: average(history, "sg_putting"),
-    sg_total: average(history, "sg_total"),
+    sg_putting: average(uniqueHistory, "sg_putting"),
+    sg_total: average(uniqueHistory, "sg_total"),
 
     driving_distance: average(
-      history,
+      uniqueHistory,
       "driving_distance"
     ),
     driving_accuracy: average(
-      history,
+      uniqueHistory,
       "driving_accuracy"
     ),
     greens_in_regulation: average(
-      history,
+      uniqueHistory,
       "greens_in_regulation"
     ),
     scrambling: average(
-      history,
+      uniqueHistory,
       "scrambling"
     ),
 
-    birdies: average(history, "birdies"),
-    eagles: average(history, "eagles"),
+    birdies: average(uniqueHistory, "birdies"),
+    eagles: average(uniqueHistory, "eagles"),
   };
 
   averages.cgi = calculateCGI(averages);
 
   const trendValue =
-    calculateTrendValue(history);
+    calculateTrendValue(uniqueHistory);
 
   const trend =
-    calculateTrend(history);
+    calculateTrend(uniqueHistory);
 
   const consistency =
-    calculateConsistency(history);
+    calculateConsistency(uniqueHistory);
 
   const predictionScore =
     calculatePredictionScore(
@@ -231,46 +246,40 @@ export function calculatePlayerAnalytics(rounds) {
       consistency
     );
 
-const experienceScore =
-  calculateExperienceScore(history.length);
+  const experienceScore =
+    calculateExperienceScore(
+      uniqueHistory.length
+    );
 
-const confidence =
-  calculateConfidence(
-    consistency,
-    history.length,
-    trend,
-    predictionScore
-  );
-
-   
-
-
+  const confidence =
+    calculateConfidence(
+      consistency,
+      uniqueHistory.length,
+      trend,
+      predictionScore
+    );
 
   return {
     ...latest,
 
     averages,
 
-    history,
+    history: uniqueHistory,
 
     trend,
 
-trendValue,
+    trendValue,
 
-consistency,
+    consistency,
 
-experienceScore,
+    experienceScore,
 
-predictionScore,
+    predictionScore,
 
-confidence,
+    confidence,
 
-    strengths: getStrengths(
-      averages
-    ),
+    strengths: getStrengths(averages),
 
-    weaknesses: getWeaknesses(
-      averages
-    ),
+    weaknesses: getWeaknesses(averages),
   };
 }

@@ -1,3 +1,4 @@
+import { calculateFieldStrength } from "./fieldStrength";
 import { calculateCourseFit } from "./courseFit";
 import { calculateGolfIQRating } from "../services/golfiqRating";
 
@@ -81,9 +82,15 @@ console.log(
 }
 
 export function rankTournament(players = []) {
+    const fieldStrength = calculateFieldStrength(players);
   const ranked = players
     .map((player) => {
       const prediction = calculateTournamentPrediction(player);
+if (prediction) {
+  prediction.rating = Number(
+    (prediction.rating * fieldStrength).toFixed(2)
+  );
+}
 
       if (!prediction) return null;
 

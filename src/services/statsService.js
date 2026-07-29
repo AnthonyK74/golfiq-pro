@@ -116,12 +116,15 @@ async function loadAnalysedPlayers(mode = "starts") {
         ? getTourModeRounds(rounds, latestTournamentIds)
         : getLastFiveStarts(rounds);
 
-    if (!selectedRounds.length) continue;
+    if (selectedRounds.length < 3) {
+  continue;
+}
 
     const analytics =
       calculatePlayerAnalytics(selectedRounds);
 
     if (!analytics) continue;
+    analytics.events = selectedRounds.length;
 
     const golfIQ = calculateGolfIQRating(analytics);
 

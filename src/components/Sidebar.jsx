@@ -17,7 +17,9 @@ const links = [
 
   { name: "🏌️ Course Fit", path: "/course-fit" },
 
-  { name: "⭐ GOAT Rankings", path: "/goat-rankings" },
+  { name: "🧠 Course Intelligence", path: "/course-intelligence" },
+
+{ name: "⭐ GOAT Rankings", path: "/goat-rankings" },
 ];
 
 export default function Sidebar() {

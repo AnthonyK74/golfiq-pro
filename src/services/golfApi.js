@@ -34,6 +34,7 @@ export async function getCompletedTournaments() {
   return request("/pga/v2/tournaments?status=COMPLETED&per_page=5");
 }
 
+
 // Tournament schedule
 export async function getUpcomingTournaments() {
   return request("/pga/v2/tournaments?season=2026&per_page=100");

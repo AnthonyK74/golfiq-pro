@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-
+import CourseIntelligence from "./pages/CourseIntelligence";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 
@@ -30,7 +30,10 @@ export default function App() {
         <main className="p-8">
           <Routes>
             <Route path="/" element={<Dashboard />} />
-
+<Route
+  path="/course-intelligence"
+  element={<CourseIntelligence />}
+/>
             <Route
               path="/statistics"
               element={<Statistics />}
