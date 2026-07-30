@@ -1,132 +1,68 @@
-export function calculateCourseFit(player, courseDNA = null) {
-  if (!player?.averages) return null;
+import { useEffect, useState } from "react";
+import { getTournamentStats } from "../services/golfApi";
 
-  const stats = player.averages;
+export default function CourseAnalysis({ tournament, onBack }) {
+  const [loading, setLoading] = useState(true);
+  const [rounds, setRounds] = useState([]);
 
-  const clamp = (value, min = 0, max = 100) =>
-    Math.max(min, Math.min(max, value));
+  useEffect(() => {
+    async function load() {
+      try {
+        setLoading(true);
 
-  // ----------------------------
-  // Individual Skill Ratings
-  // ----------------------------
+        const response = await getTournamentStats(tournament.id);
 
-  const driving = clamp(
-    50 +
-      (stats.sg_off_tee || 0) * 20 +
-      ((stats.driving_distance || 295) - 295) * 0.30 +
-      ((stats.driving_accuracy || 60) - 60) * 0.60
+        setRounds(response.data ?? []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    load();
+  }, [tournament]);
+
+  return (
+    <div className="p-6 text-white">
+      <button
+        onClick={onBack}
+        className="mb-6 rounded bg-green-500 px-4 py-2 font-bold text-black"
+      >
+        ← Back
+      </button>
+
+      <h1 className="mb-2 text-3xl font-bold text-green-400">
+        {tournament.name}
+      </h1>
+
+      <p className="mb-6 text-slate-400">
+        {tournament.course_name}
+      </p>
+
+      {loading ? (
+        <p className="text-green-400">
+          Loading historical data...
+        </p>
+      ) : (
+        <>
+          <div className="rounded-xl bg-slate-900 p-6">
+            <h2 className="mb-2 text-xl font-bold">
+              Historical Statistics
+            </h2>
+
+            <p>
+              Player records analysed: <strong>{rounds.length}</strong>
+            </p>
+
+            {rounds.length === 0 && (
+              <p className="mt-3 text-yellow-400">
+                Historical statistics are unavailable for this tournament.
+              </p>
+            )}
+          </div>
+        </>
+      )}
+    </div>
   );
-
-  const approach = clamp(
-    50 +
-      (stats.sg_approach || 0) * 22 +
-      ((stats.greens_in_regulation || 65) - 65) * 0.80
-  );
-
-  const shortGame = clamp(
-    50 +
-      (stats.sg_around_green || 0) * 22 +
-      ((stats.scrambling || 55) - 55) * 0.70
-  );
-
-  const putting = clamp(
-    50 +
-      (stats.sg_putting || 0) * 22 +
-      (stats.birdies || 0) * 2
-  );
-
-  // ----------------------------
-  // Form
-  // ----------------------------
-
-  let form = 50;
-
-  switch (player.trend) {
-    case "🔥 Hot":
-      form = 100;
-      break;
-
-    case "📈 Improving":
-      form = 85;
-      break;
-
-    case "➡ Stable":
-      form = 70;
-      break;
-
-    case "📉 Cooling":
-      form = 55;
-      break;
-
-    default:
-      form = 40;
-  }
-
-  const consistency = clamp(player.consistency ?? 70);
-
-  // ----------------------------
-  // Course DNA
-  // ----------------------------
-
-  const weights =
-    courseDNA ?? {
-      approach: 33,
-      offTee: 22,
-      aroundGreen: 15,
-      putting: 15,
-      accuracy: 10,
-      scrambling: 5,
-    };
-
-  // ----------------------------
-  // Core Course Score
-  // ----------------------------
-
-  const courseScore =
-    driving *
-      ((weights.offTee + weights.accuracy) / 100) +
-    approach *
-      (weights.approach / 100) +
-    shortGame *
-      ((weights.aroundGreen + weights.scrambling) / 100) +
-    putting *
-      (weights.putting / 100);
-
-  // ----------------------------
-  // Apply Bonuses
-  // ----------------------------
-
-  const score = clamp(
-    courseScore * 0.85 +
-      form * 0.10 +
-      consistency * 0.05
-  );
-
-  // ----------------------------
-  // Recommendation
-  // ----------------------------
-
-  let recommendation = "Poor Fit";
-
-  if (score >= 95)
-    recommendation = "Elite";
-  else if (score >= 90)
-    recommendation = "Excellent";
-  else if (score >= 80)
-    recommendation = "Very Good";
-  else if (score >= 70)
-    recommendation = "Good";
-  else if (score >= 60)
-    recommendation = "Playable";
-
-  return {
-    score: Number(score.toFixed(1)),
-    driving: Number(driving.toFixed(1)),
-    approach: Number(approach.toFixed(1)),
-    shortGame: Number(shortGame.toFixed(1)),
-    putting: Number(putting.toFixed(1)),
-    form,
-    consistency,
-    recommendation,
-  };
 }
