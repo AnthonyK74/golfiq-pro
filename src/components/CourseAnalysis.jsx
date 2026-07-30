@@ -1,176 +1,132 @@
-import { useEffect, useMemo, useState } from "react";
-import { getTournamentStats } from "../services/golfApi";
-import { calculateCourseFit } from "../utils/courseFitEngine";
+export function calculateCourseFit(player, courseDNA = null) {
+  if (!player?.averages) return null;
 
-export default function CourseAnalysis({
-  tournament,
-  onBack,
-}) {
-  const [loading, setLoading] = useState(true);
-  const [rounds, setRounds] = useState([]);
-  const [search, setSearch] = useState("");
+  const stats = player.averages;
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
+  const clamp = (value, min = 0, max = 100) =>
+    Math.max(min, Math.min(max, value));
 
-      try {
-        console.log(
-          "Loading tournament:",
-          tournament.id,
-          tournament.name,
-          tournament.season
-        );
+  // ----------------------------
+  // Individual Skill Ratings
+  // ----------------------------
 
-        const response = await getTournamentStats(tournament.id);
-
-        const data = response.data ?? response;
-
-        console.log("Historical data:", data);
-
-        setRounds(data);
-      } catch (err) {
-        console.error(err);
-        setRounds([]);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    load();
-  }, [tournament]);
-
-  const leaderboard = useMemo(() => {
-    if (!rounds.length) return [];
-
-    return rounds
-      .map((player) => {
-        const fit = calculateCourseFit([player]);
-
-        return {
-          id: player.player.id,
-          name: player.player.display_name,
-          overall: fit.overall,
-          driving: fit.driving,
-          approach: fit.approach,
-          shortGame: fit.shortGame,
-          putting: fit.putting,
-          sgTotal: Number(player.sg_total ?? 0).toFixed(2),
-        };
-      })
-      .sort((a, b) => b.overall - a.overall);
-  }, [rounds]);
-
-  const filteredPlayers = leaderboard.filter((player) =>
-    player.name.toLowerCase().includes(search.toLowerCase())
+  const driving = clamp(
+    50 +
+      (stats.sg_off_tee || 0) * 20 +
+      ((stats.driving_distance || 295) - 295) * 0.30 +
+      ((stats.driving_accuracy || 60) - 60) * 0.60
   );
 
-  function medal(index) {
-    if (index === 0) return "🥇";
-    if (index === 1) return "🥈";
-    if (index === 2) return "🥉";
-    return index + 1;
+  const approach = clamp(
+    50 +
+      (stats.sg_approach || 0) * 22 +
+      ((stats.greens_in_regulation || 65) - 65) * 0.80
+  );
+
+  const shortGame = clamp(
+    50 +
+      (stats.sg_around_green || 0) * 22 +
+      ((stats.scrambling || 55) - 55) * 0.70
+  );
+
+  const putting = clamp(
+    50 +
+      (stats.sg_putting || 0) * 22 +
+      (stats.birdies || 0) * 2
+  );
+
+  // ----------------------------
+  // Form
+  // ----------------------------
+
+  let form = 50;
+
+  switch (player.trend) {
+    case "🔥 Hot":
+      form = 100;
+      break;
+
+    case "📈 Improving":
+      form = 85;
+      break;
+
+    case "➡ Stable":
+      form = 70;
+      break;
+
+    case "📉 Cooling":
+      form = 55;
+      break;
+
+    default:
+      form = 40;
   }
 
-  return (
-    <div className="p-6 text-white">
-      <button
-        onClick={onBack}
-        className="mb-6 bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded"
-      >
-        ← Back to Tournaments
-      </button>
+  const consistency = clamp(player.consistency ?? 70);
 
-      <h1 className="text-3xl font-bold text-green-400">
-        {tournament.name}
-      </h1>
+  // ----------------------------
+  // Course DNA
+  // ----------------------------
 
-      <p className="mb-6">
-        {tournament.course_name || "Unknown Course"}
-      </p>
+  const weights =
+    courseDNA ?? {
+      approach: 33,
+      offTee: 22,
+      aroundGreen: 15,
+      putting: 15,
+      accuracy: 10,
+      scrambling: 5,
+    };
 
-      {loading ? (
-        <div className="text-green-400 text-lg">
-          Loading historical data...
-        </div>
-      ) : rounds.length === 0 ? (
-        <div className="border border-green-500 rounded-lg p-6">
-          <h2 className="text-xl font-bold mb-4">
-            Historical Analysis
-          </h2>
+  // ----------------------------
+  // Core Course Score
+  // ----------------------------
 
-          <div className="text-yellow-400 font-medium">
-            Historical statistics are unavailable for this tournament.
-          </div>
-        </div>
-      ) : (
-        <>
-          <div className="border border-green-500 rounded-lg p-6 mb-6">
-            <h2 className="text-xl font-bold mb-2">
-              Course Fit Leaderboard
-            </h2>
+  const courseScore =
+    driving *
+      ((weights.offTee + weights.accuracy) / 100) +
+    approach *
+      (weights.approach / 100) +
+    shortGame *
+      ((weights.aroundGreen + weights.scrambling) / 100) +
+    putting *
+      (weights.putting / 100);
 
-            <p className="text-slate-400 mb-4">
-              Player records analysed:
-              <strong> {rounds.length}</strong>
-            </p>
+  // ----------------------------
+  // Apply Bonuses
+  // ----------------------------
 
-            <input
-              type="text"
-              placeholder="Search player..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full md:w-80 bg-slate-800 border border-slate-600 rounded px-3 py-2 mb-6"
-            />
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead className="border-b border-slate-700">
-                  <tr>
-                    <th className="py-2">Rank</th>
-                    <th>Player</th>
-                    <th>Course Fit</th>
-                    <th>Driving</th>
-                                        <th>Approach</th>
-                    <th>Short Game</th>
-                    <th>Putting</th>
-                    <th>SG Total</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {filteredPlayers.map((player, index) => (
-                    <tr
-                      key={player.id}
-                      className="border-b border-slate-800 hover:bg-slate-900"
-                    >
-                      <td className="py-3 font-bold">
-                        {medal(index)}
-                      </td>
-
-                      <td>{player.name}</td>
-
-                      <td className="font-bold text-green-400">
-                        {player.overall}
-                      </td>
-
-                      <td>{player.driving}</td>
-
-                      <td>{player.approach}</td>
-
-                      <td>{player.shortGame}</td>
-
-                      <td>{player.putting}</td>
-
-                      <td>{player.sgTotal}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </>
-      )}
-    </div>
+  const score = clamp(
+    courseScore * 0.85 +
+      form * 0.10 +
+      consistency * 0.05
   );
+
+  // ----------------------------
+  // Recommendation
+  // ----------------------------
+
+  let recommendation = "Poor Fit";
+
+  if (score >= 95)
+    recommendation = "Elite";
+  else if (score >= 90)
+    recommendation = "Excellent";
+  else if (score >= 80)
+    recommendation = "Very Good";
+  else if (score >= 70)
+    recommendation = "Good";
+  else if (score >= 60)
+    recommendation = "Playable";
+
+  return {
+    score: Number(score.toFixed(1)),
+    driving: Number(driving.toFixed(1)),
+    approach: Number(approach.toFixed(1)),
+    shortGame: Number(shortGame.toFixed(1)),
+    putting: Number(putting.toFixed(1)),
+    form,
+    consistency,
+    recommendation,
+  };
 }
