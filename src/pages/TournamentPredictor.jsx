@@ -181,9 +181,13 @@ const { courseDNA } = useGolfIQ();
                     Confidence
                   </th>
 
-                  <th className="px-4 py-4 text-center">
-                    Trend
-                  </th>
+                  <th className="px-4 py-4 text-left">
+  Why?
+</th>
+
+<th className="px-4 py-4 text-center">
+  Trend
+</th>
 
                 </tr>
 
@@ -244,17 +248,23 @@ const { courseDNA } = useGolfIQ();
                     </td>
 
                     <td className="px-4 py-4 text-center">
-                      <>
-  <div>{confidence(player.prediction.win)}</div>
-  <div className="text-xs text-slate-400">
-    {player.prediction.confidence}%
-  </div>
-</>
-                    </td>
+  <>
+    <div>{confidence(player.prediction.win)}</div>
+    <div className="text-xs text-slate-400">
+      {player.prediction.confidence}%
+    </div>
+  </>
+</td>
 
-                    <td className="px-4 py-4 text-center text-xl">
-                      {player.trend}
-                    </td>
+<td className="px-4 py-4 text-left">
+  <div className="max-w-xs text-sm text-slate-300">
+    {player.prediction.courseFit.reason}
+  </div>
+</td>
+
+<td className="px-4 py-4 text-center text-xl">
+  {player.trend}
+</td>
 
                   </tr>
 

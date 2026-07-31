@@ -19,10 +19,14 @@ export function calculateTournamentPrediction(player, courseDNA = null) {
   if (!courseFit) return null;
 
   const rating =
-    golfIQ.rating * 0.4 +
-    courseFit.score * 0.4 +
-    courseFit.form * 0.1 +
-    courseFit.consistency * 0.1;
+  golfIQ.rating * 0.35 +
+  courseFit.score * 0.25 +
+  courseFit.driving * 0.10 +
+  courseFit.approach * 0.10 +
+  courseFit.shortGame * 0.05 +
+  courseFit.putting * 0.05 +
+  courseFit.form * 0.05 +
+  courseFit.consistency * 0.05;
 
   return {
     golfIQRating: round(golfIQ.rating),

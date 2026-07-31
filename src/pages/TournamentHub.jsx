@@ -2,10 +2,15 @@ import { formatDate } from "../utils/dateUtils";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getTournamentDetails } from "../services/tournamentService";
+import FieldStrengthCard from "../components/FieldStrengthCard";
+import { useGolfIQ } from "../context/GolfIQContext";
+import PredictionFavourite from "../components/PredictionFavourite";
+import TopGolfIQPlayers from "../components/TopGolfIQPlayers";
 
 export default function TournamentHub() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { players, courseDNA } = useGolfIQ();
 
   const [tournament, setTournament] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -115,6 +120,23 @@ setTournament(tournament);
           />
 
         </div>
+<div className="mt-8">
+  <FieldStrengthCard players={players} />
+</div>
+<div className="mt-8 grid gap-6 lg:grid-cols-2">
+
+  <FieldStrengthCard players={players} />
+
+  <PredictionFavourite
+    players={players}
+    courseDNA={courseDNA}
+  />
+
+
+</div>
+<div className="mt-8">
+  <TopGolfIQPlayers players={players} />
+</div>
 
         <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
 <button
