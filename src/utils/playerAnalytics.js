@@ -168,6 +168,7 @@ export function calculateConfidence(
 }
 
 export function calculatePlayerAnalytics(rounds) {
+  
   if (!rounds.length) return null;
 
   const sortedRounds = [...rounds].sort(
@@ -194,6 +195,7 @@ export function calculatePlayerAnalytics(rounds) {
   if (!uniqueHistory.length) return null;
 
   const latest = uniqueHistory[0];
+  console.log("Latest Round", latest);
 
   const averages = {
     tournaments: uniqueHistory.length,

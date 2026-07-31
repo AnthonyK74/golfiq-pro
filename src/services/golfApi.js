@@ -52,6 +52,15 @@ export async function getTournamentStats(tournamentId) {
   );
 }
 
+// Tournament Results
+export async function getTournamentResults(
+  tournamentId,
+  page = 1
+) {
+  return request(
+    `/pga/v1/tournament_results?tournament_ids[]=${tournamentId}&per_page=100&page=${page}`
+  );
+}
 
 // Single tournament
 export async function getTournament(tournamentId) {

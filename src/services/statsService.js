@@ -1,6 +1,7 @@
 import {
   getCompletedTournaments,
   getTournamentStats,
+  getTournamentResults,
 } from "./golfApi";
 
 import {
@@ -55,6 +56,43 @@ async function loadPlayerStats() {
   return allRounds;
 }
 
+async function loadTournamentResults() {
+  const tournamentsResponse = await getCompletedTournaments();
+  const tournaments = tournamentsResponse.data ?? [];
+
+  const allResults = [];
+
+  for (const tournament of tournaments) {
+    let page = 1;
+
+    while (true) {
+      try {
+        const response = await getTournamentResults(
+          tournament.id,
+          page
+        );
+
+        const results = response.data ?? [];
+
+        if (!results.length) break;
+
+        allResults.push(...results);
+
+        const nextPage = response.meta?.next_page;
+
+        if (!nextPage) break;
+
+        page = nextPage;
+      } catch (err) {
+        console.error(err);
+        break;
+      }
+    }
+  }
+
+  return allResults;
+}
+
 function groupRoundsByPlayer(rounds) {
   const grouped = new Map();
 
@@ -88,9 +126,24 @@ function getTourModeRounds(playerRounds, latestTournamentIds) {
 }
 
 async function loadAnalysedPlayers(mode = "starts") {
-  const allRounds = await loadPlayerStats();
+  const [allRounds, allResults] = await Promise.all([
+  loadPlayerStats(),
+  loadTournamentResults(),
+]);
 
   const grouped = groupRoundsByPlayer(allRounds);
+
+  const resultsByPlayer = new Map();
+
+for (const result of allResults) {
+  const id = String(result.player.id);
+
+  if (!resultsByPlayer.has(id)) {
+    resultsByPlayer.set(id, []);
+  }
+
+  resultsByPlayer.get(id).push(result);
+}
 
   const latestTournamentIds = [
     ...new Set(
@@ -162,8 +215,15 @@ else if (metrics.shortGame >= 85)
 else if (metrics.putting >= 85)
   archetype = "🎱 Putting Specialist";
 
+const playerResults =
+  resultsByPlayer.get(
+    String(analytics.player.id)
+  ) ?? [];
+
 players.push({
   ...analytics,
+
+  results: playerResults,
 
   golfIQ: {
     ...golfIQ,
@@ -175,6 +235,11 @@ players.push({
     archetype,
   },
 });
+
+console.log(
+  analytics.player.display_name,
+  playerResults.length
+);
   }
 
   return players;
