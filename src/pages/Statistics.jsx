@@ -101,13 +101,17 @@ export default function Statistics() {
 
         <div>
 
-          <h1 className="text-5xl font-bold text-green-400">
-            GolfIQ Rankings
-          </h1>
+        <p className="font-semibold uppercase tracking-widest text-green-400">
+  Statistics
+</p>
 
-          <p className="mt-2 text-slate-400">
-            Live player analytics from the last five starts
-          </p>
+<h1 className="mt-2 text-5xl font-extrabold">
+  PGA Statistics
+</h1>
+
+<p className="mt-2 text-slate-400">
+  Explore GolfIQ player analytics and performance statistics.
+</p>  
 
         </div>
 

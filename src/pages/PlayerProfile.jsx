@@ -59,13 +59,17 @@ export default function PlayerProfile() {
       <div className="flex flex-col justify-between gap-6 lg:flex-row">
 
         <div>
-          <h1 className="text-5xl font-bold text-green-400">
-            {player.player.display_name}
-          </h1>
+          <p className="font-semibold uppercase tracking-widest text-green-400">
+  Player Profile
+</p>
 
-          <p className="mt-2 text-xl text-slate-400">
-            {player.player.country}
-          </p>
+<h1 className="mt-2 text-5xl font-extrabold">
+  {player.player.display_name}
+</h1>
+
+<p className="mt-2 text-slate-400">
+  {player.player.country}
+</p>
 
           <div className="mt-6 flex flex-wrap gap-3">
 
@@ -160,6 +164,36 @@ export default function PlayerProfile() {
   <StatRow label="Grade" value={golfIQ.grade} />
   <StatRow label="Confidence" value={`${player.confidence}%`} />
   <StatRow label="Consistency" value={`${player.consistency}%`} />
+
+<StatRow
+  label="Ball Striking"
+  value={golfIQ.metrics.ballStrikingScore?.toFixed(1)}
+/>
+
+<StatRow
+  label="Scoring"
+  value={golfIQ.metrics.scoringScore?.toFixed(1)}
+/>
+
+<StatRow
+  label="Course Fit"
+  value={courseFit.score}
+/>
+
+<StatRow
+  label="Form"
+  value={player.confidence}
+/>
+
+<StatRow
+  label="Consistency"
+  value={player.consistency}
+/>
+
+<StatRow
+  label="Archetype"
+  value={golfIQ.archetype}
+/>
 
   <hr className="my-5 border-slate-700" />
 

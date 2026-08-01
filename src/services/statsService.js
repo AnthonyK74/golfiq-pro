@@ -1,3 +1,4 @@
+import { calculateCourseFit } from "../utils/courseFit";
 import {
   getCompletedTournaments,
   getTournamentStats,
@@ -57,8 +58,11 @@ async function loadPlayerStats() {
 }
 
 async function loadTournamentResults() {
-  const tournamentsResponse = await getCompletedTournaments();
-  const tournaments = tournamentsResponse.data ?? [];
+  const tournamentsResponse =
+    await getCompletedTournaments();
+
+  const tournaments =
+    tournamentsResponse.data ?? [];
 
   const allResults = [];
 
@@ -67,24 +71,26 @@ async function loadTournamentResults() {
 
     while (true) {
       try {
-        const response = await getTournamentResults(
-          tournament.id,
-          page
-        );
+        const response =
+          await getTournamentResults(
+            tournament.id,
+            page
+          );
 
-        const results = response.data ?? [];
+        const results =
+          response.data ?? [];
 
         if (!results.length) break;
 
         allResults.push(...results);
 
-        const nextPage = response.meta?.next_page;
+        const nextPage =
+          response.meta?.next_page;
 
         if (!nextPage) break;
 
         page = nextPage;
-      } catch (err) {
-        console.error(err);
+      } catch {
         break;
       }
     }
@@ -110,40 +116,174 @@ function groupRoundsByPlayer(rounds) {
 }
 
 function getLastFiveStarts(playerRounds) {
-  return [...playerRounds]
+  const tournaments = new Map();
+
+  for (const round of playerRounds) {
+    const id = round.tournament?.id;
+
+    if (!id) continue;
+
+    if (!tournaments.has(id)) {
+      tournaments.set(id, {
+        date: round.tournament?.start_date,
+        rounds: [],
+      });
+    }
+
+    tournaments.get(id).rounds.push(round);
+  }
+
+  return [...tournaments.values()]
     .sort(
       (a, b) =>
-        new Date(b.tournament?.start_date ?? 0) -
-        new Date(a.tournament?.start_date ?? 0)
+        new Date(b.date) -
+        new Date(a.date)
     )
-    .slice(0, 5);
+    .slice(0, 5)
+    .flatMap((t) => t.rounds);
 }
 
-function getTourModeRounds(playerRounds, latestTournamentIds) {
+function getTourModeRounds(
+  playerRounds,
+  latestTournamentIds
+) {
   return playerRounds.filter((round) =>
-    latestTournamentIds.includes(round.tournament?.id)
+    latestTournamentIds.includes(
+      round.tournament?.id
+    )
   );
+}
+
+/* --------------------------------------------------
+   GolfIQ V3
+--------------------------------------------------- */
+
+function clamp(value, min = 0, max = 100) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function buildGolfIQ(players) {
+  // -------------------------
+  // Build one raw score
+  // -------------------------
+
+  players.forEach((player) => {
+    const golfIQ = player.golfIQ.rating;
+    const cgi = player.golfIQ.cgi;
+
+    const sgTotal =
+      player.averages.sg_total ?? 0;
+
+    const courseFit =
+      player.courseFit?.score ?? 75;
+
+    const confidence =
+      player.confidence ?? 70;
+
+    // -------------------------
+// Five GolfIQ Pillars
+// -------------------------
+
+const ballStriking =
+  golfIQ * 0.60 +
+  courseFit * 0.40;
+
+const scoring =
+  cgi * 4 +
+  sgTotal * 6;
+
+const course =
+  courseFit;
+
+const consistency =
+  player.consistency ?? 70;
+
+const form =
+  confidence;
+
+player.golfIQ.rawScore =
+  ballStriking * 0.40 +
+  scoring * 0.25 +
+  course * 0.15 +
+  consistency * 0.10 +
+  form * 0.10;
+  });
+
+  // -------------------------
+  // Normalise final score
+  // -------------------------
+
+  const scores = players.map(
+    (p) => p.golfIQ.rawScore
+  );
+
+  const min = Math.min(...scores);
+  const max = Math.max(...scores);
+  const range = Math.max(max - min, 1);
+
+  players.forEach((player) => {
+    const score =
+      (player.golfIQ.rawScore - min) /
+      range;
+
+    player.golfIQ.rating = Number(
+      (60 + score * 40).toFixed(1)
+    );
+  });
+
+  // -------------------------
+  // Sort
+  // -------------------------
+
+  players.sort(
+    (a, b) =>
+      b.golfIQ.rating -
+      a.golfIQ.rating
+  );
+
+  // -------------------------
+  // Grades
+  // -------------------------
+
+  players.forEach((player, index) => {
+    let grade = "B";
+
+    if (index === 0)
+      grade = "S";
+    else if (index < 5)
+      grade = "A+";
+    else if (index < 10)
+      grade = "A";
+    else if (index < 20)
+      grade = "A-";
+    else if (index < 40)
+      grade = "B+";
+
+    player.golfIQ.grade = grade;
+  });
+
+  return players;
 }
 
 async function loadAnalysedPlayers(mode = "starts") {
   const [allRounds, allResults] = await Promise.all([
-  loadPlayerStats(),
-  loadTournamentResults(),
-]);
+    loadPlayerStats(),
+    loadTournamentResults(),
+  ]);
 
   const grouped = groupRoundsByPlayer(allRounds);
 
   const resultsByPlayer = new Map();
 
-for (const result of allResults) {
-  const id = String(result.player.id);
+  for (const result of allResults) {
+    const id = String(result.player.id);
 
-  if (!resultsByPlayer.has(id)) {
-    resultsByPlayer.set(id, []);
+    if (!resultsByPlayer.has(id)) {
+      resultsByPlayer.set(id, []);
+    }
+
+    resultsByPlayer.get(id).push(result);
   }
-
-  resultsByPlayer.get(id).push(result);
-}
 
   const latestTournamentIds = [
     ...new Set(
@@ -166,130 +306,124 @@ for (const result of allResults) {
   for (const rounds of grouped.values()) {
     const selectedRounds =
       mode === "tour"
-        ? getTourModeRounds(rounds, latestTournamentIds)
+        ? getTourModeRounds(
+            rounds,
+            latestTournamentIds
+          )
         : getLastFiveStarts(rounds);
 
-    if (selectedRounds.length < 3) {
-  continue;
-}
+    if (selectedRounds.length < 3) continue;
 
     const analytics =
       calculatePlayerAnalytics(selectedRounds);
 
     if (!analytics) continue;
-    analytics.events = selectedRounds.length;
+
+    const tournamentCount = new Set(
+      selectedRounds.map(
+        (r) => r.tournament?.id
+      )
+    ).size;
+
+    analytics.events = tournamentCount;
+    analytics.rounds = selectedRounds.length;
 
     const golfIQ = calculateGolfIQRating(analytics);
+const courseFit = calculateCourseFit(analytics);
 
-const metrics = golfIQ.metrics;
+    const metrics = golfIQ.metrics;
 
-const metricList = [
-  ["Off the Tee", metrics.offTee],
-  ["Approach", metrics.approach],
-  ["Around the Green", metrics.aroundGreen],
-  ["Putting", metrics.putting],
-  ["Ball Striking", metrics.ballStriking],
-  ["Short Game", metrics.shortGame],
-];
+    const metricList = [
+      ["Off the Tee", metrics.offTee],
+      ["Approach", metrics.approach],
+      ["Around the Green", metrics.aroundGreen],
+      ["Putting", metrics.putting],
+      ["Ball Striking", metrics.ballStriking],
+      ["Short Game", metrics.shortGame],
+    ];
 
-const sortedMetrics = [...metricList].sort(
-  (a, b) => b[1] - a[1]
-);
+    const sortedMetrics = [...metricList].sort(
+      (a, b) => b[1] - a[1]
+    );
 
-const strengths = sortedMetrics
-  .slice(0, 3)
-  .map(([name]) => name);
+    const strengths = sortedMetrics
+      .slice(0, 3)
+      .map(([name]) => name);
 
-const weaknesses = sortedMetrics
-  .slice(-2)
-  .map(([name]) => name);
+    const weaknesses = sortedMetrics
+      .slice(-2)
+      .map(([name]) => name);
 
-let archetype = "Balanced Player";
+    let archetype = "Balanced Player";
 
-if (metrics.offTee >= 85)
-  archetype = "🚀 Power Driver";
-else if (metrics.approach >= 85)
-  archetype = "🎯 Iron Specialist";
-else if (metrics.shortGame >= 85)
-  archetype = "🧙 Short Game Wizard";
-else if (metrics.putting >= 85)
-  archetype = "🎱 Putting Specialist";
+    if (metrics.offTee >= 85)
+      archetype = "🚀 Power Driver";
+    else if (metrics.approach >= 85)
+      archetype = "🎯 Iron Specialist";
+    else if (metrics.shortGame >= 85)
+      archetype = "🧙 Short Game Wizard";
+    else if (metrics.putting >= 85)
+      archetype = "🎱 Putting Specialist";
 
-const playerResults =
-  resultsByPlayer.get(
-    String(analytics.player.id)
-  ) ?? [];
+    const playerResults =
+      resultsByPlayer.get(
+        String(analytics.player.id)
+      ) ?? [];
 
-players.push({
+    players.push({
   ...analytics,
 
+  rounds: selectedRounds,
+
+  starts: tournamentCount,
+
   results: playerResults,
+
+  courseFit,
 
   golfIQ: {
     ...golfIQ,
 
     strengths,
-
     weaknesses,
-
     archetype,
   },
 });
-
-console.log(
-  analytics.player.display_name,
-  playerResults.length
-);
-  }
-
-  return players;
 }
 
-export async function getAllPlayers(mode = "starts") {
+  // NEW: Build GolfIQ V3 after all players exist
+  return buildGolfIQ(players);
+}
+
+export async function getAllPlayers(
+  mode = "starts"
+) {
   return loadAnalysedPlayers(mode);
 }
 
 export async function getLeaderboard(
-  statField = "cgi",
+  statField = "golfiq",
   mode = "starts"
 ) {
-  const players = await loadAnalysedPlayers(mode);
+  const players =
+    await loadAnalysedPlayers(mode);
 
-  players.sort((a, b) => {
-    switch (statField) {
-      case "golfiq":
-        return (
-          b.golfIQ.rating -
-          a.golfIQ.rating
-        );
-
-      case "cgi":
+  if (statField !== "golfiq") {
+    players.sort((a, b) => {
+      if (statField === "cgi") {
         return (
           b.averages.cgi -
           a.averages.cgi
         );
+      }
 
-      default:
-        return (
-          (b.averages?.[statField] ?? 0) -
-          (a.averages?.[statField] ?? 0)
-        );
-    }
-  });
-if (statField === "golfiq") {
-  players.forEach((player, index) => {
-    let grade = "C";
+      return (
+        (b.averages?.[statField] ?? 0) -
+        (a.averages?.[statField] ?? 0)
+      );
+    });
+  }
 
-    if (index === 0) grade = "S";
-    else if (index < 5) grade = "A+";
-    else if (index < 10) grade = "A";
-    else if (index < 20) grade = "A-";
-    else if (index < 40) grade = "B+";
-    else if (index < 60) grade = "B";
-
-    player.golfIQ.grade = grade;
-  });
-}
   return players.slice(0, 20);
 }
 
@@ -297,7 +431,8 @@ export async function getPlayer(
   id,
   mode = "starts"
 ) {
-  const players = await loadAnalysedPlayers(mode);
+  const players =
+    await loadAnalysedPlayers(mode);
 
   return (
     players.find(
@@ -317,7 +452,8 @@ export async function searchPlayers(
 
   if (!search) return players;
 
-  const term = search.toLowerCase();
+  const term =
+    search.toLowerCase();
 
   return players.filter((p) => {
     const fullName =

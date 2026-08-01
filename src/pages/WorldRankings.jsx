@@ -60,13 +60,23 @@ export default function WorldRankings() {
         ← Dashboard
       </button>
 
-      <h1 className="text-4xl font-bold text-green-400">
-        🏆 GolfIQ World Rankings
-      </h1>
+ <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-400">
+  CURRENT RANKINGS
+</p>
 
-      <p className="mt-2 mb-8 text-slate-400">
-        Live rankings generated from GolfIQ analytics.
-      </p>
+<h1 className="mt-2 text-5xl font-extrabold text-white">
+  GolfIQ Current Rankings
+</h1>
+
+<p className="mt-4 text-xl text-slate-300">
+  Rankings based on each player's last 5 completed PGA Tour tournaments.
+</p>     
+
+<div className="mt-6 mb-8 rounded-xl border border-slate-800 bg-slate-900 p-4">
+  <p className="text-sm text-slate-300">
+    <strong>About Current Rankings:</strong> These rankings provide a snapshot of the players currently performing at the highest level on the PGA Tour, based on their most recent completed tournaments.
+  </p>
+</div>
 
       {loading ? (
         <div className="rounded-xl bg-slate-900 p-10 text-center">

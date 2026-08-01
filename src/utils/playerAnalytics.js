@@ -21,21 +21,33 @@ export function calculateCGI(stats) {
 export function calculateTrendValue(history) {
   if (history.length < 2) return 0;
 
-  const latest = Number(history[0]?.sg_total ?? 0);
-  const oldest = Number(
-    history[history.length - 1]?.sg_total ?? 0
-  );
+  const recent = history.slice(0, 3);
+  const older = history.slice(3);
 
-  return latest - oldest;
+  const recentAverage =
+    recent.reduce(
+      (sum, round) => sum + Number(round.sg_total ?? 0),
+      0
+    ) / recent.length;
+
+  if (!older.length) return recentAverage;
+
+  const olderAverage =
+    older.reduce(
+      (sum, round) => sum + Number(round.sg_total ?? 0),
+      0
+    ) / older.length;
+
+  return recentAverage - olderAverage;
 }
 
 export function calculateTrend(history) {
   const value = calculateTrendValue(history);
 
-  if (value >= 1.0) return "🔥 Hot";
-  if (value >= 0.4) return "📈 Improving";
-  if (value <= -1.0) return "❄️ Cold";
-  if (value <= -0.4) return "📉 Cooling";
+  if (value >= 2.0) return "🔥 Hot";
+if (value >= 0.75) return "📈 Improving";
+if (value <= -2.0) return "❄️ Cold";
+if (value <= -0.75) return "📉 Cooling";
 
   return "➡ Stable";
 }

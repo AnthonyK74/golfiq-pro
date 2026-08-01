@@ -31,7 +31,9 @@ export async function getPlayers() {
 
 // Latest completed tournaments
 export async function getCompletedTournaments() {
-  return request("/pga/v2/tournaments?status=COMPLETED&per_page=5");
+  return request(
+    "/pga/v2/tournaments?status=COMPLETED&per_page=20"
+  );
 }
 
 export async function getAllCompletedTournaments(season = 2026) {

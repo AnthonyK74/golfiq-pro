@@ -36,18 +36,17 @@ export default function Dashboard() {
 
           <div>
 
-            <p className="font-semibold uppercase tracking-widest text-green-400">
-              Professional PGA Analytics
-            </p>
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-400">
+  DASHBOARD
+</p>
 
-            <h1 className="mt-2 text-5xl font-extrabold">
-              GolfIQ Pro
-            </h1>
+<h1 className="mt-2 text-5xl font-extrabold text-white">
+  Welcome to GolfIQ Pro
+</h1>
 
-            <p className="mt-5 max-w-3xl text-lg text-slate-300">
-              Live strokes gained analytics, GolfIQ ratings,
-              course fit, trends and tournament predictions.
-            </p>
+<p className="mt-4 max-w-3xl text-xl text-slate-300">
+  Your home for current player rankings, tournament predictions, course intelligence and PGA Tour analytics.
+</p>  
 
           </div>
 
@@ -187,7 +186,7 @@ export default function Dashboard() {
           />
 
           <QuickLink
-            icon="📊"
+            icon="📈"
             title="Statistics"
             subtitle="Player analytics"
             to="/statistics"

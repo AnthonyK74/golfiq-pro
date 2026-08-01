@@ -47,13 +47,24 @@ export default function Predictions() {
         ← Back to Dashboard
       </button>
 
-      <h1 className="mb-2 text-4xl font-bold text-green-400">
-        🎯 GolfIQ Prediction Centre
-      </h1>
+      <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-400">
+  PREDICTIONS
+</p>
 
-      <p className="mb-8 text-slate-400">
-        Live predictions generated from each player's five most recent starts.
-      </p>
+<h1 className="mt-2 text-5xl font-extrabold text-white">
+  GolfIQ Prediction Centre
+</h1>
+
+<p className="mt-4 mb-8 text-xl text-slate-300">
+  Live predictions generated from each player's five most recent PGA Tour starts.
+</p>
+
+<div className="mb-8 rounded-xl border border-slate-800 bg-slate-900 p-5">
+  <span className="font-bold">
+    About Predictions:
+  </span>{" "}
+  GolfIQ combines recent form, Combined Golf Index (CGI), Strokes Gained metrics and player consistency to identify the strongest contenders based on recent performance.
+</div>
 
       {loading && (
         <div className="py-20 text-center text-slate-400">
@@ -130,7 +141,7 @@ export default function Predictions() {
 
             <table className="min-w-full">
 
-              <thead className="bg-slate-900">
+             <thead className="border-b border-slate-700 bg-slate-900">
 
                 <tr>
 
@@ -184,7 +195,7 @@ export default function Predictions() {
 
                   <tr
                     key={player.player.id}
-                    className="border-t border-slate-800 transition hover:bg-slate-900"
+                    className="border-t border-slate-800 transition hover:bg-slate-800"
                   >
 
                     <td className="px-4 py-4 text-xl font-bold text-green-400">

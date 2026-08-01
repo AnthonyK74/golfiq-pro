@@ -29,12 +29,16 @@ export default function Schedule() {
         }
 
         tournaments.sort(
-          (a, b) => new Date(a.start_date) - new Date(b.start_date)
+          (a, b) =>
+            new Date(a.start_date) -
+            new Date(b.start_date)
         );
 
         let featured =
           tournaments.find(
-            (t) => (t.status || "").toUpperCase() === "LIVE"
+            (t) =>
+              (t.status || "").toUpperCase() ===
+              "LIVE"
           ) || null;
 
         if (!featured) {
@@ -42,21 +46,27 @@ export default function Schedule() {
 
           featured =
             tournaments.find(
-              (t) => new Date(t.start_date) >= today
-            ) || tournaments[tournaments.length - 1];
+              (t) =>
+                new Date(t.start_date) >= today
+            ) ||
+            tournaments[tournaments.length - 1];
         }
 
         const ordered = featured
           ? [
               featured,
-              ...tournaments.filter((t) => t.id !== featured.id),
+              ...tournaments.filter(
+                (t) => t.id !== featured.id
+              ),
             ]
           : tournaments;
 
         setEvents(ordered);
       } catch (err) {
         console.error(err);
-        setError("Unable to load tournament schedule.");
+        setError(
+          "Unable to load tournament schedule."
+        );
       } finally {
         setLoading(false);
       }
@@ -67,6 +77,7 @@ export default function Schedule() {
 
   return (
     <div className="mx-auto max-w-7xl">
+
       <button
         onClick={() => navigate("/")}
         className="mb-8 rounded-xl bg-green-500 px-5 py-3 font-bold text-slate-900 hover:bg-green-400"
@@ -74,12 +85,32 @@ export default function Schedule() {
         ← Dashboard
       </button>
 
-      <h1 className="text-4xl font-bold text-green-400">
-        📅 Tournament Schedule
+      <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-400">
+        TOURNAMENT SCHEDULE
+      </p>
+
+      <h1 className="mt-2 text-5xl font-extrabold text-white">
+        PGA Tournament Schedule
       </h1>
 
+      <p className="mt-4 mb-8 text-xl text-slate-300">
+        Browse completed and upcoming PGA Tour events
+        and access tournament information.
+      </p>
+
+      <div className="mb-8 rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <span className="font-bold">
+          About Tournament Schedule:
+        </span>{" "}
+        View the PGA Tour calendar, explore
+        tournament details and quickly access
+        Tournament Hub, leaderboards, predictions
+        and course intelligence.
+      </div>
+
       {events.length > 0 && !loading && (
-        <div className="mt-8 mb-10 rounded-2xl border-2 border-green-500 bg-slate-900 p-8">
+        <div className="mb-10 rounded-2xl border-2 border-green-500 bg-slate-900 p-8">
+
           <div className="mb-3 text-sm font-bold uppercase tracking-widest text-green-400">
             ⭐ Featured Tournament
           </div>
@@ -89,23 +120,34 @@ export default function Schedule() {
           </h2>
 
           <p className="mt-3 text-slate-300">
-            🏌️ {events[0].course_name || "Course TBA"}
+            🏌️{" "}
+            {events[0].course_name ||
+              "Course TBA"}
           </p>
 
           <p className="text-slate-300">
-            📅 {formatDateRange(events[0].start_date, events[0].end_date)}
+            📅{" "}
+            {formatDateRange(
+              events[0].start_date,
+              events[0].end_date
+            )}
           </p>
 
           <button
-            onClick={() => navigate(`/tournament/${events[0].id}`)}
+            onClick={() =>
+              navigate(
+                `/tournament/${events[0].id}`
+              )
+            }
             className="mt-6 rounded-xl bg-green-500 px-6 py-3 font-bold text-slate-900 hover:bg-green-400"
           >
             Open Tournament Hub →
           </button>
+
         </div>
       )}
 
-      <p className="mb-8 mt-2 text-slate-400">
+      <p className="mb-8 text-slate-400">
         Browse current and upcoming PGA Tour events.
       </p>
 
@@ -121,70 +163,103 @@ export default function Schedule() {
         </div>
       )}
 
-      {!loading && !error && events.length === 0 && (
-        <div className="rounded-xl border border-yellow-600 bg-yellow-950/20 p-6 text-yellow-300">
-          No scheduled tournaments were returned by the API.
-        </div>
-      )}
+      {!loading &&
+        !error &&
+        events.length === 0 && (
+          <div className="rounded-xl border border-yellow-600 bg-yellow-950/20 p-6 text-yellow-300">
+            No scheduled tournaments were
+            returned by the API.
+          </div>
+        )}
 
-      {!loading && !error && events.length > 1 && (
-        <div className="space-y-6">
-          {events.slice(1).map((event) => (
-            <div
-              key={event.id}
-              onClick={() => navigate(`/tournament/${event.id}`)}
-              className="cursor-pointer rounded-2xl border border-slate-800 bg-slate-900 p-6 transition hover:border-green-500 hover:bg-slate-800"
-            >
-              <div className="flex flex-col justify-between gap-4 lg:flex-row">
-                <div>
-                  <div className="mb-2 inline-block rounded-full bg-green-500 px-3 py-1 text-sm font-bold text-slate-900">
-                    {event.status ?? "Tournament"}
+      {!loading &&
+        !error &&
+        events.length > 1 && (
+          <div className="space-y-6">
+            {events
+              .slice(1)
+              .map((event) => (
+                <div
+                  key={event.id}
+                  onClick={() =>
+                    navigate(
+                      `/tournament/${event.id}`
+                    )
+                  }
+                  className="cursor-pointer rounded-2xl border border-slate-800 bg-slate-900 p-6 transition hover:border-green-500 hover:bg-slate-800"
+                >
+                  <div className="flex flex-col justify-between gap-4 lg:flex-row">
+
+                    <div>
+
+                      <div className="mb-2 inline-block rounded-full bg-green-500 px-3 py-1 text-sm font-bold text-slate-900">
+                        {event.status ??
+                          "Tournament"}
+                      </div>
+
+                      <h2 className="text-3xl font-bold text-white">
+                        {event.name}
+                      </h2>
+
+                      <p className="mt-3 text-slate-300">
+                        🏌️{" "}
+                        {event.course_name ??
+                          event.course ??
+                          "Course TBA"}
+                      </p>
+
+                      <p className="text-slate-300">
+                        📍{" "}
+                        {[
+                          event.city,
+                          event.state,
+                          event.country,
+                        ]
+                          .filter(Boolean)
+                          .join(", ") ||
+                          "Location TBA"}
+                      </p>
+
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-5 lg:min-w-[320px]">
+
+                      <InfoCard
+                        title="Start Date"
+                        value={formatDate(
+                          event.start_date
+                        )}
+                      />
+
+                      <InfoCard
+                        title="End Date"
+                        value={formatDate(
+                          event.end_date
+                        )}
+                      />
+
+                      <InfoCard
+                        title="Purse"
+                        value={
+                          event.purse ?? "TBA"
+                        }
+                      />
+
+                      <InfoCard
+                        title="Tournament Hub"
+                        value="Open →"
+                      />
+
+                    </div>
+
                   </div>
-
-                  <h2 className="text-3xl font-bold text-white">
-                    {event.name}
-                  </h2>
-
-                  <p className="mt-3 text-slate-300">
-                    🏌️ {event.course_name ?? event.course ?? "Course TBA"}
-                  </p>
-
-                  <p className="text-slate-300">
-                    📍{" "}
-                    {[event.city, event.state, event.country]
-                      .filter(Boolean)
-                      .join(", ") || "Location TBA"}
-                  </p>
                 </div>
-
-                <div className="grid grid-cols-2 gap-5 lg:min-w-[320px]">
-                  <InfoCard
-                    title="Start Date"
-                    value={formatDate(event.start_date)}
-                  />
-
-                  <InfoCard
-                    title="End Date"
-                    value={formatDate(event.end_date)}
-                  />
-
-                  <InfoCard
-                    title="Purse"
-                    value={event.purse ?? "TBA"}
-                  />
-
-                  <InfoCard
-                    title="Tournament Hub"
-                    value="Open →"
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+              ))}
+          </div>
+        )}
 
       <BackToTop />
+
     </div>
   );
 }
@@ -192,8 +267,13 @@ export default function Schedule() {
 function InfoCard({ title, value }) {
   return (
     <div className="rounded-xl bg-slate-950 p-4">
-      <div className="text-sm text-slate-400">{title}</div>
-      <div className="mt-2 font-bold text-green-400">{value}</div>
+      <div className="text-sm text-slate-400">
+        {title}
+      </div>
+
+      <div className="mt-2 font-bold text-green-400">
+        {value}
+      </div>
     </div>
   );
 }

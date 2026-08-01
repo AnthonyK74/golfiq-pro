@@ -29,9 +29,24 @@ export default function ComparePlayers() {
 
       <div>
 
-        <h1 className="text-5xl font-bold text-green-400">
-          Compare Players
-        </h1>
+        <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-400">
+  COMPARE PLAYERS
+</p>
+
+<h1 className="mt-2 text-5xl font-extrabold text-white">
+  PGA Player Comparison
+</h1>
+
+<p className="mt-4 mb-8 text-xl text-slate-300">
+  Compare two PGA Tour players side by side using GolfIQ ratings, current form and performance analytics.
+</p>
+
+<div className="mb-8 rounded-xl border border-slate-800 bg-slate-900 p-5">
+  <span className="font-bold">
+    About Player Comparison:
+  </span>{" "}
+  Compare any two analysed PGA Tour players to see how they stack up across GolfIQ Rating, strokes gained metrics, current form and key performance statistics.
+</div>
 
         <p className="mt-2 text-slate-400">
           Compare GolfIQ analytics side by side

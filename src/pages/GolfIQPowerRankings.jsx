@@ -45,19 +45,29 @@ console.log(rankings[0]);
         ← Back
       </button>
 
-      <h1 className="mb-2 text-4xl font-bold text-green-400">
-  📈 GolfIQ Pro Power Rankings
+      <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-400">
+  GOLFIQ POWER RANKINGS
+</p>
+
+<h1 className="mt-2 text-5xl font-extrabold text-white">
+  GolfIQ Power Rankings
 </h1>
 
-      <p className="mb-8 text-slate-400">
-        GolfIQ Pro proprietary rankings based on performance across the last five completed PGA Tour tournaments.
-      </p>
+<p className="mt-4 mb-8 text-xl text-slate-300">
+  Our proprietary player rankings based on performance across the last five completed PGA Tour tournaments.
+</p>
+<div className="mb-8 rounded-xl border border-slate-800 bg-slate-900 p-5">
+  <span className="font-bold">
+    About GolfIQ Power Rankings:
+  </span>{" "}
+  These rankings combine GolfIQ analysis into one proprietary rating designed to identify the strongest all-round PGA Tour players based on their most recent tournaments.
+</div>
 
       <div className="overflow-x-auto rounded-xl border border-slate-700">
 
         <table className="min-w-full">
 
-          <thead className="bg-slate-900">
+        <thead className="border-b border-slate-700 bg-slate-900">  
   <tr>
     <th className="p-4">Rank</th>
     <th className="p-4 text-left">Player</th>
@@ -72,10 +82,10 @@ console.log(rankings[0]);
             {players.slice(0,20).map((player,index)=>(
 
               <tr
-                key={player.player.id}
+  key={player.player.id}
   onClick={() => navigate(`/player/${player.player.id}`)}
-  className="cursor-pointer border-t border-slate-800 transition-colors hover:bg-slate-900"
-              >
+  className="cursor-pointer border-t border-slate-800 transition-colors hover:bg-slate-800"
+>
 
                 <td className="p-4 font-bold">
                   {index+1}

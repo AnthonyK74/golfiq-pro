@@ -54,9 +54,24 @@ export default function CourseIntelligence() {
 
   return (
     <div className="p-6 text-white">
-      <h1 className="text-2xl font-bold mb-6">
-        🧠 Course Intelligence
-      </h1>
+      <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-400">
+  COURSE INTELLIGENCE
+</p>
+
+<h1 className="mt-2 text-5xl font-extrabold text-white">
+  PGA Course Intelligence
+</h1>
+
+<p className="mt-4 mb-8 text-xl text-slate-300">
+  Explore Course DNA and discover which players are best suited to every PGA Tour venue.
+</p>
+
+<div className="mb-8 rounded-xl border border-slate-800 bg-slate-900 p-5">
+  <span className="font-bold">
+    About Course Intelligence:
+  </span>{" "}
+  Analyse each PGA Tour course using GolfIQ Course DNA, historical trends and player suitability to identify the strongest course fits.
+</div>
 
       <div className="mb-6 flex items-center gap-3">
         <label className="font-semibold">Season:</label>
