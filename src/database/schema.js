@@ -1,12 +1,22 @@
 import db from "./database.js";
 
 export function initialiseDatabase() {
+
+  // Clear existing data before importing again
+  db.exec(`
+    DELETE FROM round_stats;
+    DELETE FROM results;
+    DELETE FROM tournaments;
+    DELETE FROM players;
+  `);
+
   db.exec(`
     CREATE TABLE IF NOT EXISTS players (
       id INTEGER PRIMARY KEY,
       first_name TEXT,
       last_name TEXT,
-      country TEXT
+      country TEXT,
+      amateur INTEGER DEFAULT 0
     );
 
     CREATE TABLE IF NOT EXISTS tournaments (

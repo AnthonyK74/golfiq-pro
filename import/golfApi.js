@@ -22,18 +22,6 @@ export async function getTournaments(season) {
   return request(`/tournaments?season=${season}&per_page=100`);
 }
 
-export async function getTournament(id) {
-  return request(`/tournaments/${id}`);
-}
-
 export async function getPlayers(page = 1) {
-  return request(`/players?per_page=100&page=${page}`);
-}
-
-export async function getPlayer(id) {
-  return request(`/players/${id}`);
-}
-
-export async function getSeasonStats(season) {
-  return request(`/season_averages?season=${season}`);
+  return request(`/players?page=${page}&per_page=100`);
 }
