@@ -1,6 +1,9 @@
-import { getTournaments } from "./golfApi";
-import { saveTournament } from "../database/repository";
-import { initialiseDatabase } from "../database/schema";
+import { getTournaments } from "./golfApi.js";
+import {
+  saveTournament,
+  savePlayer,
+} from "../database/repository.js";
+import { initialiseDatabase } from "../database/schema.js";
 
 function mapTournament(apiTournament) {
   return {
@@ -31,14 +34,21 @@ export async function importSeason(season) {
     console.log(`Found ${tournaments.length} tournaments`);
 
     for (const tournament of tournaments) {
-      saveTournament(mapTournament(tournament));
 
-      imported++;
+  saveTournament(mapTournament(tournament));
 
-      console.log(
-        `[${imported}/${tournaments.length}] ${tournament.name}`
-      );
-    }
+  const players = tournament.players ?? [];
+
+  for (const player of players) {
+    savePlayer(player);
+  }
+
+  imported++;
+
+  console.log(
+    `[${imported}/${tournaments.length}] ${tournament.name}`
+  );
+}
 
     console.log(`\n✅ ${season} import complete`);
     console.log(`Imported ${imported} tournaments`);

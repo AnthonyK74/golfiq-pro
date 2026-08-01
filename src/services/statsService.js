@@ -1,3 +1,4 @@
+import { getDatabase } from "./databaseService";
 import { calculateCourseFit } from "../utils/courseFit";
 import {
   getCompletedTournaments,
@@ -9,6 +10,9 @@ import {
   hasCache,
   getCache,
   setCache,
+  hasPlayersCache,
+  getPlayersCache,
+  setPlayersCache,
   clearCache,
 } from "./cacheService";
 
@@ -265,11 +269,12 @@ player.golfIQ.rawScore =
   return players;
 }
 
+
 async function loadAnalysedPlayers(mode = "starts") {
   const [allRounds, allResults] = await Promise.all([
-    loadPlayerStats(),
-    loadTournamentResults(),
-  ]);
+  loadPlayerStats(),
+  loadTournamentResults(),
+]);
 
   const grouped = groupRoundsByPlayer(allRounds);
 
@@ -392,12 +397,21 @@ const courseFit = calculateCourseFit(analytics);
 }
 
   // NEW: Build GolfIQ V3 after all players exist
-  return buildGolfIQ(players);
+  const rankedPlayers = buildGolfIQ(players);
+
+return rankedPlayers;
 }
 
 export async function getAllPlayers(
   mode = "starts"
 ) {
+  const database = getDatabase();
+
+  if (database.length > 0) {
+    console.log("✅ Loaded players from database");
+    return database;
+  }
+
   return loadAnalysedPlayers(mode);
 }
 

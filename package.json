@@ -7,11 +7,13 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "import": "node import/runImport.js"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
     "better-sqlite3": "^13.0.1",
+    "dotenv": "^17.4.2",
     "lucide-react": "^1.25.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

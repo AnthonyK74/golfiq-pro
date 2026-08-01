@@ -1,6 +1,4 @@
-const API_KEY =
-  import.meta.env.VITE_BALLDONTLIE_API_KEY ??
-  "";
+const API_KEY = process.env.VITE_BALLDONTLIE_API_KEY;
 
 const BASE_URL = "https://api.balldontlie.io/pga/v2";
 
@@ -19,8 +17,6 @@ async function request(endpoint) {
 
   return response.json();
 }
-
-export { API_KEY, BASE_URL, request };
 
 export async function getTournaments(season) {
   return request(`/tournaments?season=${season}&per_page=100`);
