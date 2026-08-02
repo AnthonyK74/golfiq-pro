@@ -25,7 +25,7 @@ async function loadPlayerStats() {
   }
 
   const tournamentsResponse = await getCompletedTournaments();
-  const tournaments = tournamentsResponse.data ?? [];
+  const tournaments = (tournamentsResponse.data ?? []).slice(0, 5);
 
   const allRounds = [];
 
@@ -65,8 +65,7 @@ async function loadTournamentResults() {
   const tournamentsResponse =
     await getCompletedTournaments();
 
-  const tournaments =
-    tournamentsResponse.data ?? [];
+  const tournaments = (tournamentsResponse.data ?? []).slice(0, 5);
 
   const allResults = [];
 
@@ -412,15 +411,25 @@ export async function getAllPlayers(
     return database;
   }
 
-  return loadAnalysedPlayers(mode);
+  if (hasPlayersCache()) {
+    return getPlayersCache();
+  }
+
+ const players = await loadAnalysedPlayers(mode);
+
+  setPlayersCache(players);
+
+  return players;
 }
+
+
 
 export async function getLeaderboard(
   statField = "golfiq",
   mode = "starts"
 ) {
   const players =
-    await loadAnalysedPlayers(mode);
+  await getAllPlayers(mode);
 
   if (statField !== "golfiq") {
     players.sort((a, b) => {

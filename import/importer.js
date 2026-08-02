@@ -1,8 +1,13 @@
-import { getTournaments, getPlayers } from "./golfApi.js";
+import {
+  getTournaments,
+  getPlayers,
+  getTournamentResults,
+} from "./golfApi.js";
 
 import {
   saveTournament,
   savePlayer,
+  saveResult,
 } from "../src/database/repository.js";
 
 import { initialiseDatabase } from "../src/database/schema.js";
@@ -72,6 +77,54 @@ async function importSeason(season) {
   }
 }
 
+async function importResults(season) {
+  console.log(`\n========== IMPORTING ${season} RESULTS ==========`);
+
+  const response = await getTournaments(season);
+  const tournaments = response.data ?? [];
+
+  let imported = 0;
+
+  for (const tournament of tournaments) {
+    console.log(`Loading ${tournament.name}...`);
+
+    let page = 1;
+
+    while (true) {
+      try {
+        const resultsResponse = await getTournamentResults(
+          tournament.id,
+          page
+        );
+
+        const results = resultsResponse.data ?? [];
+
+        if (!results.length) break;
+
+        for (const result of results) {
+          saveResult({
+            tournament_id: tournament.id,
+            player_id: result.player.id,
+            position: result.position,
+            total_score: result.total_score,
+          });
+
+          imported++;
+        }
+
+        if (!resultsResponse.meta?.next_page) break;
+
+        page = resultsResponse.meta.next_page;
+      } catch (err) {
+        console.log(`No results for ${tournament.name}`);
+        break;
+      }
+    }
+  }
+
+  console.log(`✅ Imported ${imported} results`);
+}
+
 export async function importHistory() {
   initialiseDatabase();
 
@@ -80,6 +133,8 @@ export async function importHistory() {
   await importSeason(2024);
   await importSeason(2025);
   await importSeason(2026);
-
+await importResults(2024);
+await importResults(2025);
+await importResults(2026);
   console.log("\n🏆 Database import complete.");
 }

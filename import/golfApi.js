@@ -26,3 +26,18 @@ export async function getPlayers(page = 1) {
 export async function getTournaments(season) {
   return request(`${V2}/tournaments?season=${season}&per_page=100`);
 }
+
+export async function getTournamentResults(
+  tournamentId,
+  page = 1
+) {
+  return request(
+    `${V1}/tournament_results?tournament_ids[]=${tournamentId}&per_page=100&page=${page}`
+  );
+}
+
+export async function getTournamentStats(tournamentId, page = 1) {
+  return request(
+    `${V1}/player_round_stats?tournament_ids[]=${tournamentId}&round_number=-1&per_page=100&page=${page}`
+  );
+}
