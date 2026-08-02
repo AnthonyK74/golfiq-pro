@@ -2,13 +2,7 @@ import db from "./database.js";
 
 export function initialiseDatabase() {
 
-  // Clear existing data before importing again
-  db.exec(`
-    DELETE FROM round_stats;
-    DELETE FROM results;
-    DELETE FROM tournaments;
-    DELETE FROM players;
-  `);
+  
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS players (
@@ -51,6 +45,14 @@ export function initialiseDatabase() {
       FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
       FOREIGN KEY (player_id) REFERENCES players(id)
     );
+  `);
+
+// Clear existing data before importing again
+  db.exec(`
+    DELETE FROM round_stats;
+    DELETE FROM results;
+    DELETE FROM tournaments;
+    DELETE FROM players;
   `);
 
   console.log("✅ GolfIQ database initialised");

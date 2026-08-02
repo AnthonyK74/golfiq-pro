@@ -1,9 +1,10 @@
 const API_KEY = process.env.VITE_BALLDONTLIE_API_KEY;
 
-const BASE_URL = "https://api.balldontlie.io/pga/v2";
+const V1 = "https://api.balldontlie.io/pga/v1";
+const V2 = "https://api.balldontlie.io/pga/v2";
 
-async function request(endpoint) {
-  const response = await fetch(`${BASE_URL}${endpoint}`, {
+async function request(url) {
+  const response = await fetch(url, {
     headers: {
       Authorization: API_KEY,
     },
@@ -18,10 +19,10 @@ async function request(endpoint) {
   return response.json();
 }
 
-export async function getTournaments(season) {
-  return request(`/tournaments?season=${season}&per_page=100`);
+export async function getPlayers(page = 1) {
+  return request(`${V1}/players?page=${page}&per_page=100`);
 }
 
-export async function getPlayers(page = 1) {
-  return request(`/players?page=${page}&per_page=100`);
+export async function getTournaments(season) {
+  return request(`${V2}/tournaments?season=${season}&per_page=100`);
 }
