@@ -2,7 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import CourseIntelligence from "./pages/CourseIntelligence";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
-
+import PredictionValidation from "./pages/PredictionValidation";
 import Dashboard from "./pages/Dashboard";
 import WorldRankings from "./pages/WorldRankings";
 import PlayerSearch from "./pages/PlayerSearch";
@@ -97,6 +97,10 @@ export default function App() {
               path="/goat-rankings"
               element={<GoatRankings />}
             />
+            <Route
+  path="/prediction-validation"
+  element={<PredictionValidation />}
+/>
           </Routes>
         </main>
       </div>

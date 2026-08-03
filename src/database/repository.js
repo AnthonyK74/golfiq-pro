@@ -111,3 +111,8 @@ export function saveRoundStat(stat) {
     stat.sg_total
   );
 }
+export function playerExists(id) {
+  return db
+    .prepare("SELECT * FROM players WHERE id = ?")
+    .get(id);
+}

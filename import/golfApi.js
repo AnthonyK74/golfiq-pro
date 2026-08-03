@@ -4,6 +4,8 @@ const V1 = "https://api.balldontlie.io/pga/v1";
 const V2 = "https://api.balldontlie.io/pga/v2";
 
 async function request(url) {
+  console.log("Calling:", url);
+
   const response = await fetch(url, {
     headers: {
       Authorization: API_KEY,
@@ -11,6 +13,9 @@ async function request(url) {
   });
 
   if (!response.ok) {
+    console.error(`FAILED: ${response.status} ${response.statusText}`);
+    console.error("URL:", url);
+
     throw new Error(
       `Ball Don't Lie API Error: ${response.status} ${response.statusText}`
     );
@@ -19,8 +24,14 @@ async function request(url) {
   return response.json();
 }
 
-export async function getPlayers(page = 1) {
-  return request(`${V1}/players?page=${page}&per_page=100`);
+export async function getPlayers(cursor = null) {
+  let url = `${V1}/players?per_page=100`;
+
+  if (cursor) {
+    url += `&cursor=${cursor}`;
+  }
+
+  return request(url);
 }
 
 export async function getTournaments(season) {
@@ -36,8 +47,20 @@ export async function getTournamentResults(
   );
 }
 
-export async function getTournamentStats(tournamentId, page = 1) {
-  return request(
-    `${V1}/player_round_stats?tournament_ids[]=${tournamentId}&round_number=-1&per_page=100&page=${page}`
-  );
+export async function getTournamentStats(
+  tournamentId,
+  page = 1
+) {
+  const url =
+    `${V1}/player_round_stats?tournament_ids[]=${tournamentId}&round_number=-1&per_page=100&page=${page}`;
+
+  console.log("\n=================================");
+  console.log("REQUEST:", url);
+
+  const data = await request(url);
+
+  console.log("RESPONSE:");
+  console.log(JSON.stringify(data, null, 2));
+
+  return data;
 }
