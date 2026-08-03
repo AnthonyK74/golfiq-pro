@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getCompletedTournaments } from "../services/golfApi";
+import { getHistoricalRounds } from "../services/historicalStatsService";
 
 export default function PredictionValidation() {
   const [tournaments, setTournaments] = useState([]);
@@ -20,6 +21,31 @@ export default function PredictionValidation() {
 
     load();
   }, []);
+
+  async function validateTournament() {
+    if (!selectedTournament) return;
+
+    console.log("=================================");
+    console.log("VALIDATING TOURNAMENT");
+    console.log(selectedTournament);
+
+    const rounds = await getHistoricalRounds(
+      selectedTournament.start_date
+    );
+
+    console.log(
+      "Historical rounds loaded:",
+      rounds.length
+    );
+
+    if (rounds.length) {
+      console.log("First round:");
+      console.log(rounds[0]);
+
+      console.log("Last historical round:");
+      console.log(rounds[rounds.length - 1]);
+    }
+  }
 
   if (loading) {
     return (
@@ -98,6 +124,7 @@ export default function PredictionValidation() {
                   </p>
 
                   <button
+                    onClick={validateTournament}
                     className="mt-6 rounded bg-green-600 px-5 py-2 font-semibold hover:bg-green-500"
                   >
                     Validate Tournament
