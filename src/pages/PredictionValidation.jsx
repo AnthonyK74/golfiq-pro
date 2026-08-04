@@ -18,7 +18,13 @@ export default function PredictionValidation() {
         const response =
           await getCompletedTournaments();
 
-        setTournaments(response.data ?? []);
+        setTournaments(
+  (response.data ?? []).sort(
+    (a, b) =>
+      new Date(b.start_date) -
+      new Date(a.start_date)
+  )
+);
       } catch (err) {
         console.error(err);
       } finally {
@@ -105,8 +111,16 @@ export default function PredictionValidation() {
                   </div>
 
                   <div className="text-sm text-slate-300">
-                    Season {tournament.season}
-                  </div>
+  {new Date(tournament.start_date).toLocaleDateString(
+    "en-GB",
+    {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }
+  )}{" "}
+  • Season {tournament.season}
+</div>
                 </div>
 
                 <div>

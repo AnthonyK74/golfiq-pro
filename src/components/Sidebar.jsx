@@ -15,6 +15,8 @@ const links = [
 
   { name: "🎯 Predictions", path: "/predictions" },
 
+  { name: "✅ Prediction Validation", path: "/prediction-validation" },
+
   { name: "🏌️ Course Fit", path: "/course-fit" },
 
   { name: "🧠 Course Intelligence", path: "/course-intelligence" },
@@ -65,7 +67,7 @@ export default function Sidebar() {
             <br />
             Ball Don't Lie PGA API
             <br />
-            Last 5 Starts Model
+            3-Month Current Form Model
           </div>
         </div>
       </div>
