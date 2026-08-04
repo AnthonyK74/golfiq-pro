@@ -3,48 +3,252 @@ import {
   getTournamentStats,
 } from "./golfApi";
 
-export async function getHistoricalRounds(cutoffDate) {
+import { calculatePlayerAnalytics } from "../utils/playerAnalytics";
+import { calculateGolfIQRating } from "./golfiqRating";
+import { calculateCourseFit } from "../utils/courseFit";
+
+/**
+ * Returns every historical round from the previous
+ * 3 months before the selected event.
+ */
+export async function getHistoricalRounds(
+  cutoffDate,
+  fieldPlayerIds = null
+) {
   const tournamentsResponse =
     await getCompletedTournaments();
 
   const tournaments =
-    (tournamentsResponse.data ?? []).filter(
-      (tournament) =>
-        new Date(tournament.start_date) <
-        new Date(cutoffDate)
+    (tournamentsResponse.data ?? []).sort(
+      (a, b) =>
+        new Date(a.start_date) -
+        new Date(b.start_date)
     );
+
+  const cutoff =
+    new Date(cutoffDate);
+
+  const lookback =
+    new Date(cutoff);
+
+  lookback.setMonth(
+    lookback.getMonth() - 3
+  );
+
+  const historicalTournaments =
+    tournaments.filter((tournament) => {
+      const start =
+        new Date(tournament.start_date);
+
+      return (
+        start >= lookback &&
+        start < cutoff
+      );
+    });
+
+  console.log(
+    "Current Form Window:"
+  );
+
+  console.log(
+    lookback.toISOString().split("T")[0],
+    "→",
+    cutoff.toISOString().split("T")[0]
+  );
+
+  console.log(
+    "Tournaments found:",
+    historicalTournaments.length
+  );
+
+  console.table(
+    historicalTournaments.map((t) => ({
+      id: t.id,
+      name: t.name,
+      start: t.start_date,
+    }))
+  );
 
   const allRounds = [];
 
-  for (const tournament of tournaments) {
-    let page = 1;
+  for (const tournament of historicalTournaments) {
+    try {
+      const response =
+        await getTournamentStats(
+          tournament.id
+        );
 
-    while (true) {
-      try {
-        const response =
-          await getTournamentStats(
-            tournament.id,
-            page
-          );
+      const rounds =
+  response.data ?? [];
 
-        const rounds =
-          response.data ?? [];
+const filteredRounds =
+  fieldPlayerIds
+    ? rounds.filter((round) =>
+        fieldPlayerIds.has(
+          round.player.id
+        )
+      )
+    : rounds;
 
-        if (!rounds.length) break;
+console.log(
+  `${tournament.name}: ${filteredRounds.length} rounds`
+);
 
-        allRounds.push(...rounds);
+allRounds.push(
+  ...filteredRounds
+);
 
-        const nextPage =
-          response.meta?.next_page;
+    } catch (err) {
 
-        if (!nextPage) break;
+      console.error(
+        `Failed loading tournament ${tournament.id}`,
+        err
+      );
 
-        page = nextPage;
-      } catch {
-        break;
-      }
     }
   }
 
+  console.log(
+    "Historical rounds:",
+    allRounds.length
+  );
+
   return allRounds;
+}
+
+/**
+ * Groups rounds by player.
+ */
+function groupRoundsByPlayer(rounds) {
+  const players = new Map();
+
+  for (const round of rounds) {
+    const id = round.player.id;
+
+    if (!players.has(id)) {
+      players.set(id, {
+        player: round.player,
+        rounds: [],
+      });
+    }
+
+    players.get(id).rounds.push(round);
+  }
+
+  return [...players.values()];
+}
+
+function countStarts(rounds) {
+  return new Set(
+    rounds.map(
+      (round) => round.tournament.id
+    )
+  ).size;
+}
+
+/**
+ * Returns analysed historical players.
+ */
+export async function getHistoricalPlayers(
+  cutoffDate,
+  fieldPlayerIds = null
+) {
+  const rounds =
+  await getHistoricalRounds(
+    cutoffDate,
+    fieldPlayerIds
+  );
+
+  let grouped =
+    groupRoundsByPlayer(rounds);
+
+  console.log(
+    "Unique players found:",
+    grouped.length
+  );
+
+  // Only analyse players that actually
+  // played in the tournament being validated.
+  if (fieldPlayerIds) {
+    grouped = grouped.filter(
+      ({ player }) =>
+        fieldPlayerIds.has(player.id)
+    );
+
+    console.log(
+      "Players in tournament field:",
+      grouped.length
+    );
+  }
+
+  const analysedPlayers = [];
+
+  let skipped = 0;
+
+  for (const player of grouped) {
+    const analytics =
+      calculatePlayerAnalytics(
+        player.rounds
+      );
+
+    if (!analytics) {
+      skipped++;
+      continue;
+    }
+
+    const golfIQ =
+      calculateGolfIQRating({
+        ...analytics,
+      });
+
+    const courseFit =
+      calculateCourseFit({
+        ...analytics,
+      });
+
+      const starts =
+  countStarts(player.rounds);
+
+    analysedPlayers.push({
+  player: player.player,
+
+  startsLast3Months:
+  starts,
+
+  rounds: player.rounds,
+
+  analytics,
+
+  golfIQ,
+
+  courseFit,
+
+  trend:
+    analytics.trend ?? null,
+
+  confidence:
+   starts >= 8
+      ? "High"
+      : starts >= 5
+      ? "Medium"
+      : "Low",
+});
+  }
+
+  console.log(
+    "Players skipped:",
+    skipped
+  );
+
+  console.log(
+    "Players analysed:",
+    analysedPlayers.length
+  );
+
+  analysedPlayers.sort(
+    (a, b) =>
+      (b.golfIQ?.rating ?? 0) -
+      (a.golfIQ?.rating ?? 0)
+  );
+return analysedPlayers;
 }

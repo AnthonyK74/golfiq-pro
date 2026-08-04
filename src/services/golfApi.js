@@ -29,14 +29,36 @@ export async function getPlayers() {
   return request("/pga/v1/players?per_page=100");
 }
 
-// Latest completed tournaments
+// ALL completed tournaments (cursor pagination)
 export async function getCompletedTournaments() {
-  return request(
-    "/pga/v2/tournaments?status=COMPLETED&per_page=20"
-  );
+  const tournaments = [];
+
+  let cursor = null;
+
+  while (true) {
+    const endpoint = cursor
+      ? `/pga/v2/tournaments?status=COMPLETED&per_page=100&cursor=${cursor}`
+      : `/pga/v2/tournaments?status=COMPLETED&per_page=100`;
+
+    const response = await request(endpoint);
+
+    tournaments.push(...(response.data ?? []));
+
+    if (!response.meta?.next_cursor) {
+      break;
+    }
+
+    cursor = response.meta.next_cursor;
+  }
+
+  return {
+    data: tournaments,
+  };
 }
 
-export async function getAllCompletedTournaments(season = 2026) {
+export async function getAllCompletedTournaments(
+  season = 2026
+) {
   return request(
     `/pga/v2/tournaments?season=${season}&status=COMPLETED&per_page=100`
   );
@@ -44,35 +66,84 @@ export async function getAllCompletedTournaments(season = 2026) {
 
 // Tournament schedule
 export async function getUpcomingTournaments() {
-  return request("/pga/v2/tournaments?season=2026&per_page=100");
-}
-
-// Tournament statistics
-export async function getTournamentStats(tournamentId) {
   return request(
-    `/pga/v1/player_round_stats?tournament_ids[]=${tournamentId}&round_number=-1&per_page=100`
+    "/pga/v2/tournaments?season=2026&per_page=100"
   );
 }
 
-// Tournament Results
-export async function getTournamentResults(
-  tournamentId,
-  page = 1
+// Tournament statistics (cursor pagination)
+export async function getTournamentStats(
+  tournamentId
 ) {
-  return request(
-    `/pga/v1/tournament_results?tournament_ids[]=${tournamentId}&per_page=100&page=${page}`
-  );
+  const allStats = [];
+
+  let cursor = null;
+
+  while (true) {
+    const endpoint = cursor
+      ? `/pga/v1/player_round_stats?tournament_ids[]=${tournamentId}&round_number=-1&per_page=100&cursor=${cursor}`
+      : `/pga/v1/player_round_stats?tournament_ids[]=${tournamentId}&round_number=-1&per_page=100`;
+
+    const response = await request(endpoint);
+
+    const rows = response.data ?? [];
+
+    allStats.push(...rows);
+
+    if (!response.meta?.next_cursor) {
+      break;
+    }
+
+    cursor = response.meta.next_cursor;
+  }
+
+  return {
+    data: allStats,
+  };
+}
+
+// Tournament Results (cursor pagination)
+export async function getTournamentResults(
+  tournamentId
+) {
+  const allResults = [];
+
+  let cursor = null;
+
+  while (true) {
+    const endpoint = cursor
+      ? `/pga/v1/tournament_results?tournament_ids[]=${tournamentId}&per_page=100&cursor=${cursor}`
+      : `/pga/v1/tournament_results?tournament_ids[]=${tournamentId}&per_page=100`;
+
+    const response = await request(endpoint);
+
+    allResults.push(...(response.data ?? []));
+
+    if (!response.meta?.next_cursor) {
+      break;
+    }
+
+    cursor = response.meta.next_cursor;
+  }
+
+  return {
+    data: allResults,
+  };
 }
 
 // Single tournament
-export async function getTournament(tournamentId) {
+export async function getTournament(
+  tournamentId
+) {
   return request(
     `/pga/v2/tournaments?tournament_ids[]=${tournamentId}`
   );
 }
 
 // Last five tournament statistics (cached)
-export async function getLastFiveTournamentStats(forceRefresh = false) {
+export async function getLastFiveTournamentStats(
+  forceRefresh = false
+) {
   if (!forceRefresh && lastFiveStatsCache) {
     return lastFiveStatsCache;
   }
@@ -82,22 +153,29 @@ export async function getLastFiveTournamentStats(forceRefresh = false) {
   }
 
   lastFiveStatsPromise = (async () => {
-    const tournaments = await getCompletedTournaments();
+    const tournaments =
+      await getCompletedTournaments();
 
-    const tournamentList = tournaments.data ?? tournaments;
+    const tournamentList =
+      tournaments.data ?? tournaments;
 
     const allStats = [];
 
     for (const tournament of tournamentList.slice(0, 5)) {
       try {
-        const stats = await getTournamentStats(tournament.id);
+        const stats =
+          await getTournamentStats(
+            tournament.id
+          );
 
-        const rows = stats.data ?? stats;
+        const rows =
+          stats.data ?? [];
 
         rows.forEach((row) => {
           allStats.push({
             ...row,
-            tournamentName: tournament.name,
+            tournamentName:
+              tournament.name,
           });
         });
       } catch (err) {

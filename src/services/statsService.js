@@ -455,7 +455,7 @@ export async function getPlayer(
   mode = "starts"
 ) {
   const players =
-    await loadAnalysedPlayers(mode);
+  await getAllPlayers(mode);
 
   return (
     players.find(
@@ -471,7 +471,7 @@ export async function searchPlayers(
   mode = "starts"
 ) {
   const players =
-    await loadAnalysedPlayers(mode);
+  await getAllPlayers(mode);
 
   if (!search) return players;
 
