@@ -1,7 +1,5 @@
-import {
-  getCompletedTournaments,
-  getTournamentStats,
-} from "./golfApi";
+import { getTournamentStats } from "./golfApi";
+import { getOfficialTournaments } from "./tournamentRegistry";
 
 import { calculatePlayerAnalytics } from "../utils/playerAnalytics";
 import { calculateGolfIQRating } from "./golfiqRating";
@@ -11,22 +9,21 @@ import { calculateCourseFit } from "../utils/courseFit";
  * Returns every historical round from the previous
  * 3 months before the selected event.
  */
-export async function getHistoricalRounds(
-  cutoffDate,
+ export async function getHistoricalRounds(
+  selectedTournament,
   fieldPlayerIds = null
 ) {
-  const tournamentsResponse =
-    await getCompletedTournaments();
-
   const tournaments =
-    (tournamentsResponse.data ?? []).sort(
-      (a, b) =>
-        new Date(a.start_date) -
-        new Date(b.start_date)
-    );
+  getOfficialTournaments(
+    selectedTournament.season
+  ).sort(
+    (a, b) =>
+      new Date(a.start_date) -
+      new Date(b.start_date)
+  );
 
   const cutoff =
-    new Date(cutoffDate);
+  new Date(selectedTournament.start_date);
 
   const lookback =
     new Date(cutoff);
@@ -35,16 +32,31 @@ export async function getHistoricalRounds(
     lookback.getMonth() - 3
   );
 
-  const historicalTournaments =
-    tournaments.filter((tournament) => {
-      const start =
-        new Date(tournament.start_date);
+  console.log("====================================");
+console.log("VALIDATION WINDOW");
+console.log("Cutoff:", cutoff.toISOString().split("T")[0]);
+console.log("Lookback:", lookback.toISOString().split("T")[0]);
+console.log("====================================");
 
-      return (
-        start >= lookback &&
-        start < cutoff
-      );
-    });
+const historicalTournaments =
+  tournaments.filter((tournament) => {
+    const end = new Date(tournament.end_date);
+
+    return (
+      end >= lookback &&
+      end < cutoff
+    );
+  });
+
+console.table(
+  historicalTournaments.map((t) => ({
+    id: t.id,
+    season: t.season,
+    name: t.name,
+    start: t.start_date,
+    end: t.end_date,
+  }))
+);
 
   console.log(
     "Current Form Window:"
@@ -149,13 +161,13 @@ function countStarts(rounds) {
 /**
  * Returns analysed historical players.
  */
-export async function getHistoricalPlayers(
-  cutoffDate,
+ export async function getHistoricalPlayers(
+  selectedTournament,
   fieldPlayerIds = null
 ) {
   const rounds =
   await getHistoricalRounds(
-    cutoffDate,
+    selectedTournament,
     fieldPlayerIds
   );
 

@@ -42,6 +42,8 @@ export async function getCompletedTournaments() {
 
     const response = await request(endpoint);
 
+    console.log("Sample tournament:", response.data?.[0]);
+
     tournaments.push(...(response.data ?? []));
 
     if (!response.meta?.next_cursor) {

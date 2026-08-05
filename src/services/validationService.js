@@ -11,11 +11,11 @@ async function generatePredictions(
   tournament,
   fieldPlayerIds
 ) {
-  const players =
-    await getHistoricalPlayers(
-      tournament.start_date,
-      fieldPlayerIds
-    );
+ const players =
+  await getHistoricalPlayers(
+    tournament,
+    fieldPlayerIds
+  );
 
   return [...players].sort(
     (a, b) =>
@@ -177,6 +177,17 @@ export async function validateTournament(
     tournamentResponse.data?.[0] ??
     tournamentResponse.data ??
     tournamentResponse;
+
+    console.log("====================================");
+console.log("SELECTED TOURNAMENT");
+console.log({
+  id: tournament.id,
+  season: tournament.season,
+  name: tournament.name,
+  start: tournament.start_date,
+  end: tournament.end_date,
+});
+console.log("====================================");
 
   const resultsResponse =
     await getTournamentResults(

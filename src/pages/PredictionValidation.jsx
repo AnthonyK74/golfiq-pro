@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
-import { getCompletedTournaments } from "../services/golfApi";
+import {
+  getOfficialTournaments,
+} from "../services/tournamentRegistry";
 import { validateTournament } from "../services/validationService";
+
 
 export default function PredictionValidation() {
   const [tournaments, setTournaments] = useState([]);
@@ -14,27 +17,19 @@ export default function PredictionValidation() {
 
   useEffect(() => {
     async function load() {
-      try {
-        const response =
-          await getCompletedTournaments();
+  try {
+    const tournaments = getOfficialTournaments();
 
-        setTournaments(
-  (response.data ?? []).sort(
-    (a, b) =>
-      new Date(b.start_date) -
-      new Date(a.start_date)
-  )
-);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
+    setTournaments(tournaments);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+}
 
-    load();
-  }, []);
-
+load();
+}, []);
   async function runValidation() {
     if (!selectedTournament) return;
 
