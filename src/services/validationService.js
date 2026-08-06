@@ -220,11 +220,32 @@ console.log(
   fieldPlayerIds.size
 );
 
-const predictions =
+const allPlayers =
   await generatePredictions(
     tournament,
     fieldPlayerIds
   );
+
+const predictions =
+  allPlayers.filter(
+    (player) => !player.excluded
+  );
+
+const playersInField =
+  fieldPlayerIds.size;
+
+const playersAnalysed =
+  predictions.length;
+
+const playersExcluded =
+  playersInField - playersAnalysed;
+
+console.log("====================================");
+console.log("VALIDATION SUMMARY");
+console.log("Players in field:", playersInField);
+console.log("Players analysed:", playersAnalysed);
+console.log("Players excluded:", playersExcluded);
+console.log("====================================");
 
   const metrics =
     compareRankings(
@@ -241,8 +262,11 @@ const predictions =
     startDate:
       tournament.start_date,
 
-    playersAnalysed:
-      predictions.length,
+    playersInField,
+
+playersAnalysed,
+
+playersExcluded,
 
     playersCompared:
       metrics.playersCompared,

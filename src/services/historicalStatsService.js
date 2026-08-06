@@ -208,6 +208,14 @@ function countStarts(rounds) {
       continue;
     }
 
+if (
+  player.player.first_name === "Akshay" &&
+  player.player.last_name === "Bhatia"
+) {
+  console.log("AKSHAY ANALYTICS");
+  console.log(analytics);
+}
+
     const golfIQ =
       calculateGolfIQRating({
         ...analytics,
@@ -221,7 +229,12 @@ function countStarts(rounds) {
       const starts =
   countStarts(player.rounds);
 
-    analysedPlayers.push({
+if (starts < 5) {
+  skipped++;
+  continue;
+}
+
+analysedPlayers.push({
   player: player.player,
 
   startsLast3Months:

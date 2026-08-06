@@ -201,7 +201,7 @@ export function calculatePlayerAnalytics(rounds) {
       uniqueHistory.push(round);
     }
 
-    if (uniqueHistory.length === 5) break;
+    
   }
 
   if (!uniqueHistory.length) return null;
