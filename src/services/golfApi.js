@@ -81,14 +81,28 @@ export async function getTournamentStats(
 
   let cursor = null;
 
-  while (true) {
-    const endpoint = cursor
-      ? `/pga/v1/player_round_stats?tournament_ids[]=${tournamentId}&round_number=-1&per_page=100&cursor=${cursor}`
-      : `/pga/v1/player_round_stats?tournament_ids[]=${tournamentId}&round_number=-1&per_page=100`;
-
+ while (true) {
+  const endpoint = cursor
+    ? `/pga/v1/player_round_stats?tournament_ids[]=${tournamentId}&per_page=100&cursor=${cursor}`
+    : `/pga/v1/player_round_stats?tournament_ids[]=${tournamentId}&per_page=100`;
     const response = await request(endpoint);
 
     const rows = response.data ?? [];
+
+    if (rows.length) {
+  console.log(
+    `Tournament requested: ${tournamentId}`
+  );
+
+  console.table(
+    rows.slice(0, 5).map((row) => ({
+      apiTournamentId: row.tournament?.id,
+      apiTournamentName: row.tournament?.name,
+      player: `${row.player.first_name} ${row.player.last_name}`,
+      round: row.round_number,
+    }))
+  );
+}
 
     allStats.push(...rows);
 

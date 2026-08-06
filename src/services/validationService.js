@@ -193,7 +193,7 @@ console.log("====================================");
     await getTournamentResults(
       tournamentId
     );
-
+console.log("STEP 2 - Loading actual results...");
   const actualResults =
     resultsResponse.data ?? [];
 
@@ -225,7 +225,7 @@ const allPlayers =
     tournament,
     fieldPlayerIds
   );
-
+console.log("STEP 1 - Building predictions...");
 const predictions =
   allPlayers.filter(
     (player) => !player.excluded
@@ -246,7 +246,7 @@ console.log("Players in field:", playersInField);
 console.log("Players analysed:", playersAnalysed);
 console.log("Players excluded:", playersExcluded);
 console.log("====================================");
-
+console.log("STEP 3 - Comparing predictions...");
   const metrics =
     compareRankings(
       predictions,

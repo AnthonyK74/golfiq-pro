@@ -14,9 +14,7 @@ import { calculateCourseFit } from "../utils/courseFit";
   fieldPlayerIds = null
 ) {
   const tournaments =
-  getOfficialTournaments(
-    selectedTournament.season
-  ).sort(
+  getOfficialTournaments().sort(
     (a, b) =>
       new Date(a.start_date) -
       new Date(b.start_date)
@@ -32,31 +30,17 @@ import { calculateCourseFit } from "../utils/courseFit";
     lookback.getMonth() - 3
   );
 
-  console.log("====================================");
-console.log("VALIDATION WINDOW");
-console.log("Cutoff:", cutoff.toISOString().split("T")[0]);
-console.log("Lookback:", lookback.toISOString().split("T")[0]);
-console.log("====================================");
-
 const historicalTournaments =
   tournaments.filter((tournament) => {
     const end = new Date(tournament.end_date);
 
     return (
-      end >= lookback &&
-      end < cutoff
-    );
+  tournament.season === selectedTournament.season &&
+  end >= lookback &&
+  end < cutoff
+);
   });
 
-console.table(
-  historicalTournaments.map((t) => ({
-    id: t.id,
-    season: t.season,
-    name: t.name,
-    start: t.start_date,
-    end: t.end_date,
-  }))
-);
 
   console.log(
     "Current Form Window:"
@@ -68,18 +52,6 @@ console.table(
     cutoff.toISOString().split("T")[0]
   );
 
-  console.log(
-    "Tournaments found:",
-    historicalTournaments.length
-  );
-
-  console.table(
-    historicalTournaments.map((t) => ({
-      id: t.id,
-      name: t.name,
-      start: t.start_date,
-    }))
-  );
 
   const allRounds = [];
 
@@ -102,9 +74,6 @@ const filteredRounds =
       )
     : rounds;
 
-console.log(
-  `${tournament.name}: ${filteredRounds.length} rounds`
-);
 
 allRounds.push(
   ...filteredRounds
@@ -120,10 +89,6 @@ allRounds.push(
     }
   }
 
-  console.log(
-    "Historical rounds:",
-    allRounds.length
-  );
 
   return allRounds;
 }
@@ -145,17 +110,21 @@ function groupRoundsByPlayer(rounds) {
     }
 
     players.get(id).rounds.push(round);
+
   }
 
   return [...players.values()];
 }
 
 function countStarts(rounds) {
-  return new Set(
-    rounds.map(
-      (round) => round.tournament.id
-    )
-  ).size;
+  const ids = [
+    ...new Set(
+      rounds.map((round) => round.tournament.id)
+    ),
+  ];
+
+
+  return ids.length;
 }
 
 /**
@@ -174,10 +143,6 @@ function countStarts(rounds) {
   let grouped =
     groupRoundsByPlayer(rounds);
 
-  console.log(
-    "Unique players found:",
-    grouped.length
-  );
 
   // Only analyse players that actually
   // played in the tournament being validated.
@@ -187,10 +152,6 @@ function countStarts(rounds) {
         fieldPlayerIds.has(player.id)
     );
 
-    console.log(
-      "Players in tournament field:",
-      grouped.length
-    );
   }
 
   const analysedPlayers = [];
@@ -204,16 +165,10 @@ function countStarts(rounds) {
       );
 
     if (!analytics) {
-      skipped++;
-      continue;
-    }
+  
 
-if (
-  player.player.first_name === "Akshay" &&
-  player.player.last_name === "Bhatia"
-) {
-  console.log("AKSHAY ANALYTICS");
-  console.log(analytics);
+  skipped++;
+  continue;
 }
 
     const golfIQ =
@@ -230,10 +185,10 @@ if (
   countStarts(player.rounds);
 
 if (starts < 5) {
+
   skipped++;
   continue;
 }
-
 analysedPlayers.push({
   player: player.player,
 
@@ -259,16 +214,6 @@ analysedPlayers.push({
       : "Low",
 });
   }
-
-  console.log(
-    "Players skipped:",
-    skipped
-  );
-
-  console.log(
-    "Players analysed:",
-    analysedPlayers.length
-  );
 
   analysedPlayers.sort(
     (a, b) =>

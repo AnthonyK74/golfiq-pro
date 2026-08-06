@@ -18,9 +18,20 @@ export default function PredictionValidation() {
   useEffect(() => {
     async function load() {
   try {
-    const tournaments = getOfficialTournaments();
+    const today = new Date();
 
-    setTournaments(tournaments);
+const tournaments = getOfficialTournaments()
+  .filter(
+    (tournament) =>
+      new Date(tournament.end_date) < today
+  )
+  .sort(
+    (a, b) =>
+      new Date(b.start_date) -
+      new Date(a.start_date)
+  );
+
+setTournaments(tournaments);
   } catch (err) {
     console.error(err);
   } finally {
@@ -170,18 +181,25 @@ load();
 
                     <div className="space-y-2 text-sm">
                       <div>
-                        Players Analysed:{" "}
-                        {
-                          results.playersAnalysed
-                        }
-                      </div>
+  Players in Field:{" "}
+  {results.playersInField}
+</div>
 
-                      <div>
-                        Players Compared:{" "}
-                        {
-                          results.playersCompared
-                        }
-                      </div>
+<div>
+  Players Analysed:{" "}
+  {results.playersAnalysed}
+</div>
+
+<div>
+  Players Excluded:{" "}
+  {results.playersExcluded}
+</div>
+
+<div>
+  Players Compared:{" "}
+  {results.playersCompared}
+</div>
+
 
                       <div>
                         Predicted Winner:{" "}

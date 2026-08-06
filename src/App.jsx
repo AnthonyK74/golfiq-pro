@@ -17,6 +17,7 @@ import TournamentPredictor from "./pages/TournamentPredictor";
 import TournamentHub from "./pages/TournamentHub";
 import Leaderboard from "./pages/Leaderboard";
 import GolfIQPowerRankings from "./pages/GolfIQPowerRankings";
+import BenchmarkValidation from "./pages/BenchmarkValidation";
 
 export default function App() {
   return (
@@ -42,7 +43,10 @@ export default function App() {
               path="/world-rankings"
               element={<WorldRankings />}
           />
-
+<Route
+  path="/benchmark-validation"
+  element={<BenchmarkValidation />}
+/>
 
 <Route
   path="/golfiq-power-rankings"
