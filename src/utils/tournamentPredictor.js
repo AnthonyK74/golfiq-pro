@@ -1,6 +1,7 @@
 import { calculateFieldStrength } from "./fieldStrength";
 import { calculateCourseFit } from "./courseFit";
 import { calculateGolfIQRating } from "../services/golfiqRating";
+import { calculateTournamentHistory } from "./tournamentHistory";
 
 function clamp(value, min = 0, max = 100) {
   return Math.max(min, Math.min(max, value));

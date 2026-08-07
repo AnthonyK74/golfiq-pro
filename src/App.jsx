@@ -12,6 +12,7 @@ import Schedule from "./pages/Schedule";
 import Statistics from "./pages/Statistics";
 import Predictions from "./pages/Predictions";
 import CourseFit from "./pages/CourseFit";
+import CourseForm from "./pages/CourseForm";
 import GoatRankings from "./pages/GoatRankings";
 import TournamentPredictor from "./pages/TournamentPredictor";
 import TournamentHub from "./pages/TournamentHub";
@@ -96,6 +97,11 @@ export default function App() {
               path="/course-fit"
               element={<CourseFit />}
             />
+
+            <Route
+  path="/course-form"
+  element={<CourseForm />}
+/>
 
             <Route
               path="/goat-rankings"

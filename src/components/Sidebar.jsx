@@ -19,6 +19,8 @@ const links = [
 
   { name: "🏌️ Course Fit", path: "/course-fit" },
 
+  { name: "📊 Course Form", path: "/course-form" },
+
   { name: "🧠 Course Intelligence", path: "/course-intelligence" },
 
 { name: "⭐ GOAT Rankings", path: "/goat-rankings" },

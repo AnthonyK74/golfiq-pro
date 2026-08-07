@@ -97,7 +97,10 @@ export async function getTournamentStats(
   console.table(
     rows.slice(0, 5).map((row) => ({
       apiTournamentId: row.tournament?.id,
-      apiTournamentName: row.tournament?.name,
+apiTournamentName: row.tournament?.name,
+season: row.tournament?.season,
+startDate: row.tournament?.start_date,
+endDate: row.tournament?.end_date,
       player: `${row.player.first_name} ${row.player.last_name}`,
       round: row.round_number,
     }))
