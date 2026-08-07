@@ -2,14 +2,16 @@ import { getTournamentStats } from "./golfApi";
 import { getOfficialTournaments } from "./tournamentRegistry";
 
 /**
- * Loads every previous edition of a tournament.
+ * Loads historical tournament rounds for every previous
+ * edition of a tournament.
+ *
  * Results are cached so they are only downloaded once.
  */
 
 const cache = new Map();
 
-export async function loadCourseHistory(tournament) {
-  if (cache.has(tournament.name)) {
+export async function loadTournamentHistory(tournament) {
+  if (cache.has(`tournament:${tournament.name}`)) {
     return cache.get(tournament.name);
   }
 
@@ -33,7 +35,10 @@ export async function loadCourseHistory(tournament) {
     }
   }
 
-  cache.set(tournament.name, history);
+  cache.set(
+  `tournament:${tournament.name}`,
+  history
+);
 
   return history;
 }
