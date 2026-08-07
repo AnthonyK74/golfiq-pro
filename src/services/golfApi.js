@@ -73,6 +73,15 @@ export async function getUpcomingTournaments() {
   );
 }
 
+// Single tournament
+export async function getTournament(
+  tournamentId
+) {
+  return request(
+    `/pga/v2/tournaments?id=${tournamentId}`
+  );
+}
+
 // Tournament statistics (cursor pagination)
 export async function getTournamentStats(
   tournamentId
@@ -89,23 +98,7 @@ export async function getTournamentStats(
 
     const rows = response.data ?? [];
 
-    if (rows.length) {
-  console.log(
-    `Tournament requested: ${tournamentId}`
-  );
 
-  console.table(
-    rows.slice(0, 5).map((row) => ({
-      apiTournamentId: row.tournament?.id,
-apiTournamentName: row.tournament?.name,
-season: row.tournament?.season,
-startDate: row.tournament?.start_date,
-endDate: row.tournament?.end_date,
-      player: `${row.player.first_name} ${row.player.last_name}`,
-      round: row.round_number,
-    }))
-  );
-}
 
     allStats.push(...rows);
 
@@ -121,7 +114,7 @@ endDate: row.tournament?.end_date,
   };
 }
 
-// Tournament Results (cursor pagination)
+// Tournament results (final leaderboard)
 export async function getTournamentResults(
   tournamentId
 ) {
@@ -136,13 +129,13 @@ export async function getTournamentResults(
 
     const response = await request(endpoint);
 
-    allResults.push(...(response.data ?? []));
+    const rows = response.data ?? [];
 
-    if (!response.meta?.next_cursor) {
-      break;
-    }
+    allResults.push(...rows);
 
-    cursor = response.meta.next_cursor;
+    cursor = response.meta?.next_cursor;
+
+    if (!cursor) break;
   }
 
   return {
@@ -150,14 +143,7 @@ export async function getTournamentResults(
   };
 }
 
-// Single tournament
-export async function getTournament(
-  tournamentId
-) {
-  return request(
-    `/pga/v2/tournaments?tournament_ids[]=${tournamentId}`
-  );
-}
+
 
 // Last five tournament statistics (cached)
 export async function getLastFiveTournamentStats(

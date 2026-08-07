@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { getOfficialTournaments } from "../services/tournamentRegistry";
+import { loadCourseForm } from "../services/courseFormService";
 
 export default function CourseForm() {
   const [selectedTournament, setSelectedTournament] = useState("");
   const [tournaments, setTournaments] = useState([]);
+  const [courseForm, setCourseForm] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,9 +35,38 @@ export default function CourseForm() {
     load();
   }, []);
 
+  async function handleTournamentChange(id) {
+    setSelectedTournament(id);
+
+    if (!id) {
+      setCourseForm([]);
+      return;
+    }
+
+    const tournament = tournaments.find(
+      (t) => String(t.id) === String(id)
+    );
+
+    if (!tournament) return;
+
+    try {
+      const data = await loadCourseForm(tournament);
+
+      data.sort((a, b) => {
+        if (a.averageFinish === null) return 1;
+        if (b.averageFinish === null) return -1;
+        return a.averageFinish - b.averageFinish;
+      });
+
+      setCourseForm(data);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-green-400">
+      <h1 className="text-3xl font-bold text-white">
         Course Form
       </h1>
 
@@ -47,7 +78,7 @@ export default function CourseForm() {
         <select
           value={selectedTournament}
           onChange={(e) =>
-            setSelectedTournament(e.target.value)
+            handleTournamentChange(e.target.value)
           }
           className="w-full rounded-lg border border-slate-700 bg-slate-800 p-3 text-white"
         >
@@ -66,15 +97,70 @@ export default function CourseForm() {
         </select>
       </div>
 
-      {!selectedTournament && (
-        <div className="rounded-xl bg-slate-900 p-8 text-center text-slate-400">
-          Select a tournament to view historical course form.
-        </div>
-      )}
-
       {loading && (
         <div className="text-slate-400">
           Loading tournaments...
+        </div>
+      )}
+
+      {!loading && selectedTournament && (
+        <div className="rounded-xl bg-slate-900 overflow-x-auto">
+          <table className="min-w-full text-sm text-white">
+            <thead className="bg-slate-800">
+              <tr>
+                <th className="p-3 text-left">Player</th>
+                <th className="p-3">Starts</th>
+                <th className="p-3">Cuts</th>
+                <th className="p-3">Top 10s</th>
+                <th className="p-3">Wins</th>
+                <th className="p-3">Best</th>
+                <th className="p-3">Average</th>
+                <th className="p-3">Last</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {courseForm.map((player) => (
+                <tr
+                  key={player.player.id}
+                  className="border-t border-slate-800"
+                >
+                  <td className="p-3">
+                    {player.player.first_name}{" "}
+                    {player.player.last_name}
+                  </td>
+
+                  <td className="text-center">
+                    {player.starts}
+                  </td>
+
+                  <td className="text-center">
+                    {player.cutsMade}
+                  </td>
+
+                  <td className="text-center">
+                    {player.top10s}
+                  </td>
+
+                  <td className="text-center">
+                    {player.wins}
+                  </td>
+
+                  <td className="text-center">
+                    {player.bestFinish ?? "-"}
+                  </td>
+
+                  <td className="text-center">
+                    {player.averageFinish ?? "-"}
+                  </td>
+
+                  <td className="text-center">
+                    {player.lastSeason || "-"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

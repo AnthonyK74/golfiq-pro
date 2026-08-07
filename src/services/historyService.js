@@ -1,4 +1,4 @@
-import { getTournamentStats } from "./golfApi";
+import { getTournamentResults } from "./golfApi";
 import { getOfficialTournaments } from "./tournamentRegistry";
 
 /**
@@ -12,7 +12,9 @@ const cache = new Map();
 
 export async function loadTournamentHistory(tournament) {
   if (cache.has(`tournament:${tournament.name}`)) {
-    return cache.get(tournament.name);
+    return cache.get(
+  `tournament:${tournament.name}`
+);
   }
 
   const history = [];
@@ -27,7 +29,7 @@ export async function loadTournamentHistory(tournament) {
   for (const event of previousTournaments) {
     try {
       const response =
-        await getTournamentStats(event.id);
+        await getTournamentResults(event.id)
 
       history.push(...(response.data ?? []));
     } catch (err) {
